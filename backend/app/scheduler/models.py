@@ -43,6 +43,7 @@ class ProblemSubject:
     max_classes_per_day: int = 2
     color_code: str = "#3B82F6"
     eligible_teacher_ids: List[int] = field(default_factory=list)
+    is_active: bool = True
 
 @dataclass
 class ProblemTeacher:
@@ -55,6 +56,7 @@ class ProblemTeacher:
     max_hours_per_day: float = 4.0
     max_hours_per_week: float = 18.0
     min_hours_per_week: float = 6.0
+    is_active: bool = True
     eligible_subject_ids: List[int] = field(default_factory=list)
     # Map of period_id -> status ('available', 'unavailable', 'preferred', 'restricted')
     availability_map: Dict[int, str] = field(default_factory=dict)

@@ -283,6 +283,8 @@ class TimetableSolver:
             room_busy = set()
             # (teacher_id, day_id) -> count
             teacher_day_count = defaultdict(int)
+            # (teacher_id) -> count
+            teacher_week_count = defaultdict(int)
             # (section_id, subject_id, day_id) -> count
             sec_sub_day_count = defaultdict(int)
 
@@ -299,6 +301,11 @@ class TimetableSolver:
                 teachers = [t for t in self.problem.teachers if t.id in sub.eligible_teacher_ids and t.is_active]
                 if not teachers:
                     teachers = [t for t in self.problem.teachers if t.is_active]
+
+                # Filter teachers who still have weekly capacity
+                available_teachers = [t for t in teachers if teacher_week_count[t.id] < t.max_hours_per_week]
+                if not available_teachers:
+                    available_teachers = teachers  # fallback if all reached cap
 
                 # Eligible rooms
                 rooms = [
@@ -318,7 +325,7 @@ class TimetableSolver:
                     if sec_sub_day_count[(sec.id, sub.id, p.day_id)] >= sub.max_classes_per_day:
                         continue
 
-                    for t in teachers:
+                    for t in available_teachers:
                         if (t.id, p.id) in teacher_busy:
                             continue
                         if t.availability_map.get(p.id) in ("unavailable", "restricted"):
@@ -350,6 +357,7 @@ class TimetableSolver:
                     teacher_busy.add((best_t.id, best_p.id))
                     room_busy.add((best_r.id, best_p.id))
                     teacher_day_count[(best_t.id, best_p.day_id)] += 1
+                    teacher_week_count[best_t.id] += 1
                     sec_sub_day_count[(sec.id, sub.id, best_p.day_id)] += 1
 
                     scheduled.append(

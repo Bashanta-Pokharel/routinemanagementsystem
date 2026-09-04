@@ -170,14 +170,16 @@ def seed_database(db: Session):
 
     # 9. Teachers with Workload Rules & Availabilities
     teachers_data = [
-        ("EMP001", "Dr. Ram Sharma", "ram.sharma@apexcollege.edu.np", "Associate Professor", dept_cs.id, 5.0, 20.0),
-        ("EMP002", "Prof. Sita Rai", "sita.rai@apexcollege.edu.np", "Professor", dept_mgmt.id, 4.0, 18.0),
-        ("EMP003", "Er. Hari Thapa", "hari.thapa@apexcollege.edu.np", "Assistant Professor", dept_cs.id, 5.0, 20.0),
-        ("EMP004", "Bikash KC", "bikash.kc@apexcollege.edu.np", "Lecturer", dept_cs.id, 4.0, 18.0),
-        ("EMP005", "Anita Shrestha", "anita.shrestha@apexcollege.edu.np", "Assistant Professor", dept_cs.id, 4.0, 16.0),
-        ("EMP006", "Ramesh Joshi", "ramesh.joshi@apexcollege.edu.np", "Lecturer", dept_cs.id, 4.0, 18.0),
-        ("EMP007", "Pooja Adhikari", "pooja.adhikari@apexcollege.edu.np", "Lecturer", dept_mgmt.id, 4.0, 18.0),
-        ("EMP008", "Sandeep Poudel", "sandeep.poudel@apexcollege.edu.np", "Lecturer", dept_cs.id, 4.0, 18.0),
+        ("EMP001", "Dr. Ram Sharma", "ram.sharma@apexcollege.edu.np", "Associate Professor", dept_cs.id, 5.0, 22.0),
+        ("EMP002", "Prof. Sita Rai", "sita.rai@apexcollege.edu.np", "Professor", dept_mgmt.id, 5.0, 22.0),
+        ("EMP003", "Er. Hari Thapa", "hari.thapa@apexcollege.edu.np", "Assistant Professor", dept_cs.id, 5.0, 22.0),
+        ("EMP004", "Bikash KC", "bikash.kc@apexcollege.edu.np", "Lecturer", dept_cs.id, 5.0, 22.0),
+        ("EMP005", "Anita Shrestha", "anita.shrestha@apexcollege.edu.np", "Assistant Professor", dept_cs.id, 5.0, 22.0),
+        ("EMP006", "Ramesh Joshi", "ramesh.joshi@apexcollege.edu.np", "Lecturer", dept_cs.id, 5.0, 22.0),
+        ("EMP007", "Pooja Adhikari", "pooja.adhikari@apexcollege.edu.np", "Lecturer", dept_mgmt.id, 5.0, 22.0),
+        ("EMP008", "Sandeep Poudel", "sandeep.poudel@apexcollege.edu.np", "Lecturer", dept_cs.id, 5.0, 22.0),
+        ("EMP009", "Dr. Kiran Shrestha", "kiran.shrestha@apexcollege.edu.np", "Associate Professor", dept_mgmt.id, 5.0, 22.0),
+        ("EMP010", "Deepak Neupane", "deepak.neupane@apexcollege.edu.np", "Lecturer", dept_cs.id, 5.0, 22.0),
     ]
 
     created_teachers = []
@@ -222,42 +224,44 @@ def seed_database(db: Session):
     t_ramesh = created_teachers[5]
     t_pooja = created_teachers[6]
     t_sandeep = created_teachers[7]
+    t_kiran = created_teachers[8]
+    t_deepak = created_teachers[9]
 
     subjects_data = [
         # BCA Sem 1
         ("CACS101", "Computer Fundamentals & Applications", bca_sem1.id, 3, 4, 3, 1, rt_computer_lab.id, "#3B82F6", [t_ramesh, t_sandeep]),
-        ("CACS102", "Society and Technology", bca_sem1.id, 3, 3, 3, 0, rt_classroom.id, "#8B5CF6", [t_anita]),
+        ("CACS102", "Society and Technology", bca_sem1.id, 3, 3, 3, 0, rt_classroom.id, "#8B5CF6", [t_anita, t_kiran]),
         ("CACS103", "English I", bca_sem1.id, 3, 3, 3, 0, rt_classroom.id, "#EC4899", [t_pooja]),
-        ("CACS104", "Mathematics I (Calculus)", bca_sem1.id, 3, 4, 4, 0, rt_classroom.id, "#F59E0B", [t_sita]),
-        ("CACS105", "Digital Logic Systems", bca_sem1.id, 3, 4, 3, 1, rt_electronics_lab.id, "#10B981", [t_hari]),
+        ("CACS104", "Mathematics I (Calculus)", bca_sem1.id, 3, 4, 4, 0, rt_classroom.id, "#F59E0B", [t_sita, t_deepak]),
+        ("CACS105", "Digital Logic Systems", bca_sem1.id, 3, 4, 3, 1, rt_electronics_lab.id, "#10B981", [t_hari, t_deepak]),
 
         # BCA Sem 3
         ("CACS201", "Data Structures and Algorithms", bca_sem3.id, 3, 4, 3, 1, rt_computer_lab.id, "#2563EB", [t_ram, t_bikash]),
-        ("CACS202", "Probability and Statistics", bca_sem3.id, 3, 3, 3, 0, rt_classroom.id, "#6366F1", [t_sita]),
-        ("CACS203", "System Analysis and Design", bca_sem3.id, 3, 3, 3, 0, rt_classroom.id, "#14B8A6", [t_anita]),
+        ("CACS202", "Probability and Statistics", bca_sem3.id, 3, 3, 3, 0, rt_classroom.id, "#6366F1", [t_sita, t_kiran]),
+        ("CACS203", "System Analysis and Design", bca_sem3.id, 3, 3, 3, 0, rt_classroom.id, "#14B8A6", [t_anita, t_ramesh]),
         ("CACS204", "Java Programming (OOP)", bca_sem3.id, 3, 4, 2, 2, rt_computer_lab.id, "#059669", [t_bikash, t_ramesh]),
         ("CACS205", "Web Technology I", bca_sem3.id, 3, 4, 2, 2, rt_computer_lab.id, "#D97706", [t_ram, t_sandeep]),
 
         # CSIT Sem 1
-        ("CSC109", "Introduction to Information Technology", csit_sem1.id, 3, 4, 3, 1, rt_computer_lab.id, "#3B82F6", [t_ramesh]),
+        ("CSC109", "Introduction to Information Technology", csit_sem1.id, 3, 4, 3, 1, rt_computer_lab.id, "#3B82F6", [t_ramesh, t_sandeep]),
         ("CSC110", "C Programming", csit_sem1.id, 3, 4, 2, 2, rt_computer_lab.id, "#059669", [t_bikash, t_ram]),
-        ("CSC111", "Digital Logic", csit_sem1.id, 3, 4, 3, 1, rt_electronics_lab.id, "#10B981", [t_hari]),
-        ("MTH112", "Calculus and Analytical Geometry", csit_sem1.id, 3, 4, 4, 0, rt_classroom.id, "#F59E0B", [t_sita]),
-        ("PHY113", "Physics I", csit_sem1.id, 3, 4, 3, 1, rt_classroom.id, "#8B5CF6", [t_anita]),
+        ("CSC111", "Digital Logic", csit_sem1.id, 3, 4, 3, 1, rt_electronics_lab.id, "#10B981", [t_hari, t_deepak]),
+        ("MTH112", "Calculus and Analytical Geometry", csit_sem1.id, 3, 4, 4, 0, rt_classroom.id, "#F59E0B", [t_sita, t_deepak]),
+        ("PHY113", "Physics I", csit_sem1.id, 3, 4, 3, 1, rt_classroom.id, "#8B5CF6", [t_anita, t_hari]),
 
         # CSIT Sem 4
-        ("CSC257", "Theory of Computation", csit_sem4.id, 3, 3, 3, 0, rt_classroom.id, "#6366F1", [t_ram]),
+        ("CSC257", "Theory of Computation", csit_sem4.id, 3, 3, 3, 0, rt_classroom.id, "#6366F1", [t_ram, t_deepak]),
         ("CSC258", "Computer Networks", csit_sem4.id, 3, 4, 3, 1, rt_computer_lab.id, "#2563EB", [t_hari, t_sandeep]),
-        ("CSC259", "Operating Systems", csit_sem4.id, 3, 4, 3, 1, rt_computer_lab.id, "#0D9488", [t_bikash]),
-        ("CSC260", "Database Management Systems", csit_sem4.id, 3, 4, 2, 2, rt_computer_lab.id, "#D97706", [t_ramesh]),
-        ("CSC261", "Artificial Intelligence", csit_sem4.id, 3, 3, 3, 0, rt_classroom.id, "#7C3AED", [t_anita]),
+        ("CSC259", "Operating Systems", csit_sem4.id, 3, 4, 3, 1, rt_computer_lab.id, "#0D9488", [t_bikash, t_ramesh]),
+        ("CSC260", "Database Management Systems", csit_sem4.id, 3, 4, 2, 2, rt_computer_lab.id, "#D97706", [t_ramesh, t_ram]),
+        ("CSC261", "Artificial Intelligence", csit_sem4.id, 3, 3, 3, 0, rt_classroom.id, "#7C3AED", [t_anita, t_bikash]),
 
         # BBA Sem 2
-        ("BBA106", "Financial Accounting", bba_sem2.id, 3, 4, 4, 0, rt_classroom.id, "#059669", [t_pooja]),
-        ("BBA107", "Macroeconomics for Business", bba_sem2.id, 3, 3, 3, 0, rt_classroom.id, "#D97706", [t_sita]),
+        ("BBA106", "Financial Accounting", bba_sem2.id, 3, 4, 4, 0, rt_classroom.id, "#059669", [t_pooja, t_kiran]),
+        ("BBA107", "Macroeconomics for Business", bba_sem2.id, 3, 3, 3, 0, rt_classroom.id, "#D97706", [t_sita, t_kiran]),
         ("BBA108", "Business Communication", bba_sem2.id, 3, 3, 3, 0, rt_classroom.id, "#EC4899", [t_pooja]),
-        ("BBA109", "Principles of Management", bba_sem2.id, 3, 3, 3, 0, rt_classroom.id, "#6366F1", [t_anita]),
-        ("BBA110", "Business Mathematics", bba_sem2.id, 3, 4, 4, 0, rt_classroom.id, "#F59E0B", [t_sita]),
+        ("BBA109", "Principles of Management", bba_sem2.id, 3, 3, 3, 0, rt_classroom.id, "#6366F1", [t_anita, t_kiran]),
+        ("BBA110", "Business Mathematics", bba_sem2.id, 3, 4, 4, 0, rt_classroom.id, "#F59E0B", [t_sita, t_deepak]),
     ]
 
     for code, name, sem_id, cr, wp, lp, pp, room_t_id, color, eligible_t_list in subjects_data:
