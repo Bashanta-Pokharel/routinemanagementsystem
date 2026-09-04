@@ -22,14 +22,15 @@ import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Executive Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Quick Simple Wizard", href: "/simple-builder", icon: Sparkles, badge: "Easy" },
   { name: "Master Routine & Editor", href: "/timetables", icon: CalendarDays },
-  { name: "Routine Generator", href: "/generator", icon: Sparkles, badge: "CP-SAT" },
+  { name: "Advanced Generator", href: "/generator", icon: Sliders, badge: "CP-SAT" },
   { name: "Teachers & Availability", href: "/teachers", icon: Users },
   { name: "Rooms & Labs", href: "/rooms", icon: DoorOpen },
   { name: "Subjects & Courses", href: "/subjects", icon: BookOpen },
   { name: "Academic Structure", href: "/academic", icon: FolderTree },
   { name: "Working Days & Periods", href: "/periods", icon: Clock },
-  { name: "Scheduling Rules", href: "/rules", icon: Sliders },
+  { name: "Scheduling Rules", href: "/rules", icon: CheckCircle },
   { name: "Audit & Version History", href: "/audit", icon: History },
 ];
 

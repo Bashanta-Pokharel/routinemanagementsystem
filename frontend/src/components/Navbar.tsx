@@ -54,20 +54,21 @@ export function Navbar({ onOpenGenerator }: NavbarProps) {
       {/* Brand / Logo */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2.5 font-bold text-slate-900 dark:text-white">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 text-white shadow-md shadow-blue-500/20">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs">
             <Calendar className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-black tracking-tight leading-none bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-300">
-              UniSchedule
+            <span className="text-base font-bold tracking-tight leading-none text-slate-900 dark:text-white">
+              Campus Routine System
             </span>
             <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              Campus Routine Optimization
+              Timetable & Schedule Management
             </span>
           </div>
         </Link>
-        <div className="hidden md:flex items-center ml-4 px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/40">
-          Apex College Campus
+        <div className="hidden sm:flex items-center gap-1.5 ml-3 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800 dark:text-emerald-300">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+          <span>MySQL (XAMPP)</span>
         </div>
       </div>
 

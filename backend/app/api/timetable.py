@@ -80,6 +80,52 @@ def generate_timetable_api(request: GenerateTimetableRequest, db: Session = Depe
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+from pydantic import BaseModel
+from typing import List, Optional
+
+class SimpleSubjectInput(BaseModel):
+    name: str
+    weekly_periods: int = 4
+    teacher_name: str
+    free_time_start: str = "08:00 AM"
+    free_time_end: str = "04:00 PM"
+    free_days: Optional[List[str]] = None
+
+class SimplePeriodInput(BaseModel):
+    name: str
+    start_time: str
+    end_time: str
+    type: str = "Teaching"
+
+class QuickWizardRequest(BaseModel):
+    class_name: str = "BCA 1st Sem"
+    routine_title: Optional[str] = None
+    days: List[str] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    periods: List[SimplePeriodInput]
+    subjects: List[SimpleSubjectInput]
+
+@router.post("/quick-wizard")
+def quick_wizard_api(req: QuickWizardRequest, db: Session = Depends(get_db)):
+    from app.scheduler.simple_wizard import generate_simple_wizard_routine
+    try:
+        periods_dict = [p.dict() for p in req.periods]
+        subjects_dict = [s.dict() for s in req.subjects]
+        for s in subjects_dict:
+            if not s.get("free_days"):
+                s["free_days"] = req.days
+
+        res = generate_simple_wizard_routine(
+            db=db,
+            class_name=req.class_name,
+            days_list=req.days,
+            periods_list=periods_dict,
+            subjects_list=subjects_dict,
+            routine_title=req.routine_title
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.post("/validate", response_model=ValidationResult)
 def validate_timetable_api(timetable_id: int, db: Session = Depends(get_db)):
     tt = db.query(Timetable).filter(Timetable.id == timetable_id).first()
