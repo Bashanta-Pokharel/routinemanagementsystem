@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  Sparkles, Play, CheckCircle2, Trophy, Sliders, 
-  Clock, ShieldCheck, Zap, ArrowRight, BarChart2, RefreshCw
+  Sparkles, Play, Trophy, Sliders, 
+  ShieldCheck, Zap
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -48,8 +48,8 @@ export default function GeneratorPage() {
       });
       setGenerationResult(res);
       confetti({
-        particleCount: 120,
-        spread: 80,
+        particleCount: 100,
+        spread: 70,
         origin: { y: 0.6 },
       });
     } catch (err: any) {
@@ -72,51 +72,51 @@ export default function GeneratorPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 font-sans">
         {/* Header */}
-        <div className="flex flex-col gap-2 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col gap-2 rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h1 className="text-xl font-black text-slate-900 dark:text-white">
-              Autonomous Routine Generator & Multi-Solution Optimizer
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+              Autonomous Routine Generator &amp; Multi-Solution Optimizer
             </h1>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Formulates academic requirements into Constraint Programming models. Eliminates collisions and ranks candidate schedules by soft-constraint satisfaction.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left: Configuration Panel */}
-          <div className="lg:col-span-1 space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Sliders className="h-4 w-4 text-blue-600" />
+          <div className="lg:col-span-1 space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+              <Sliders className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
               Optimization Parameters
             </h2>
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                   Routine Title
                 </label>
                 <input
                   type="text"
                   value={routineName}
                   onChange={(e) => setRoutineName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                   Academic Session
                 </label>
                 <select
                   value={selectedYearId}
                   onChange={(e) => setSelectedYearId(Number(e.target.value))}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
                 >
                   {academicYears.map((ay) => (
                     <option key={ay.id} value={ay.id}>
@@ -127,13 +127,13 @@ export default function GeneratorPage() {
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                   Candidate Solutions to Generate
                 </label>
                 <select
                   value={numSolutions}
                   onChange={(e) => setNumSolutions(Number(e.target.value))}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-zinc-200 px-3 py-2 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
                 >
                   <option value={3}>3 Diverse Solutions (Recommended)</option>
                   <option value={5}>5 Diverse Solutions</option>
@@ -142,15 +142,15 @@ export default function GeneratorPage() {
               </div>
 
               {/* Weight Sliders */}
-              <div className="border-t border-slate-100 pt-3 dark:border-slate-800 space-y-3">
-                <span className="font-bold text-slate-800 dark:text-slate-200 uppercase text-[10px] tracking-wider block">
+              <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800 space-y-3">
+                <span className="font-bold text-zinc-800 dark:text-zinc-200 uppercase text-[10px] tracking-wider block">
                   Constraint Weights (1 - 10)
                 </span>
 
                 <div>
-                  <div className="flex justify-between font-medium text-slate-600 dark:text-slate-400 mb-1 text-[11px]">
+                  <div className="flex justify-between font-medium text-zinc-600 dark:text-zinc-400 mb-1 text-[11px]">
                     <span>Teacher Preferred Slots</span>
-                    <span className="font-bold text-blue-600">{weights.teacher_preference}</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">{weights.teacher_preference}</span>
                   </div>
                   <input
                     type="range"
@@ -158,14 +158,14 @@ export default function GeneratorPage() {
                     max="10"
                     value={weights.teacher_preference}
                     onChange={(e) => setWeights({ ...weights, teacher_preference: Number(e.target.value) })}
-                    className="w-full accent-blue-600 cursor-pointer"
+                    className="w-full accent-emerald-600 dark:accent-emerald-400 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-medium text-slate-600 dark:text-slate-400 mb-1 text-[11px]">
+                  <div className="flex justify-between font-medium text-zinc-600 dark:text-zinc-400 mb-1 text-[11px]">
                     <span>Subject Spread Across Days</span>
-                    <span className="font-bold text-blue-600">{weights.subject_distribution}</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">{weights.subject_distribution}</span>
                   </div>
                   <input
                     type="range"
@@ -173,14 +173,14 @@ export default function GeneratorPage() {
                     max="10"
                     value={weights.subject_distribution}
                     onChange={(e) => setWeights({ ...weights, subject_distribution: Number(e.target.value) })}
-                    className="w-full accent-blue-600 cursor-pointer"
+                    className="w-full accent-emerald-600 dark:accent-emerald-400 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-medium text-slate-600 dark:text-slate-400 mb-1 text-[11px]">
+                  <div className="flex justify-between font-medium text-zinc-600 dark:text-zinc-400 mb-1 text-[11px]">
                     <span>Minimize Daily Idle Gaps</span>
-                    <span className="font-bold text-blue-600">{weights.idle_gaps}</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">{weights.idle_gaps}</span>
                   </div>
                   <input
                     type="range"
@@ -188,13 +188,13 @@ export default function GeneratorPage() {
                     max="10"
                     value={weights.idle_gaps}
                     onChange={(e) => setWeights({ ...weights, idle_gaps: Number(e.target.value) })}
-                    className="w-full accent-blue-600 cursor-pointer"
+                    className="w-full accent-emerald-600 dark:accent-emerald-400 cursor-pointer"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300">
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
                   {error}
                 </div>
               )}
@@ -202,7 +202,7 @@ export default function GeneratorPage() {
               <button
                 onClick={handleGenerate}
                 disabled={generating}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 py-3 font-bold text-white shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 active:scale-95 disabled:opacity-50 transition-all cursor-pointer text-xs"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 text-white py-3 font-bold shadow-xs active:scale-95 disabled:opacity-50 transition-all cursor-pointer text-xs"
               >
                 {generating ? (
                   <>
@@ -211,7 +211,7 @@ export default function GeneratorPage() {
                   </>
                 ) : (
                   <>
-                    <Play className="h-4 w-4 fill-white" />
+                    <Play className="h-4 w-4 fill-current" />
                     Generate Routine Solutions
                   </>
                 )}
@@ -224,41 +224,41 @@ export default function GeneratorPage() {
             {generationResult ? (
               <div className="space-y-4">
                 {/* Generation Summary Card */}
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
+                <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-5 w-5 text-emerald-600" />
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                         Optimization Run Report
                       </h3>
                     </div>
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-mono font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                       0 Hard Conflicts
                     </span>
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 text-xs">
-                    <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/40">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Solver Time</span>
-                      <div className="text-base font-black text-slate-900 dark:text-white mt-0.5">
+                    <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/40">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase">Solver Time</span>
+                      <div className="text-base font-black text-zinc-900 dark:text-white mt-0.5 font-mono">
                         {generationResult.execution_time_seconds}s
                       </div>
                     </div>
-                    <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/40">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Solutions Found</span>
-                      <div className="text-base font-black text-blue-600 dark:text-blue-400 mt-0.5">
+                    <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/40">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase">Solutions Found</span>
+                      <div className="text-base font-black text-zinc-900 dark:text-white mt-0.5 font-mono">
                         {generationResult.solutions_found}
                       </div>
                     </div>
-                    <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/40">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Top Score</span>
-                      <div className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/40">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase">Top Score</span>
+                      <div className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5 font-mono">
                         {generationResult.best_score}%
                       </div>
                     </div>
-                    <div className="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/40">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Decision Variables</span>
-                      <div className="text-base font-black text-slate-900 dark:text-white mt-0.5">
+                    <div className="rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/40">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase">Variables</span>
+                      <div className="text-base font-black text-zinc-900 dark:text-white mt-0.5 font-mono">
                         {generationResult.total_variables || 2180}
                       </div>
                     </div>
@@ -267,7 +267,7 @@ export default function GeneratorPage() {
 
                 {/* Candidate Solution Cards */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                     Generated Candidate Solutions
                   </h3>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -275,50 +275,50 @@ export default function GeneratorPage() {
                       <div
                         key={idx}
                         className={cn(
-                          "rounded-3xl border bg-white p-5 shadow-sm dark:bg-slate-900 flex flex-col justify-between transition-all",
+                          "rounded-2xl border bg-white p-5 shadow-xs dark:bg-zinc-900 flex flex-col justify-between transition-all",
                           idx === 0
-                            ? "border-blue-500 ring-2 ring-blue-500/20 dark:border-blue-600"
-                            : "border-slate-200 dark:border-slate-800"
+                            ? "border-emerald-500 dark:border-emerald-600 ring-2 ring-emerald-500/20"
+                            : "border-zinc-200 dark:border-zinc-800"
                         )}
                       >
                         <div>
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                              <Trophy className={cn("h-4 w-4", idx === 0 ? "text-amber-500" : "text-slate-400")} />
+                            <span className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                              <Trophy className={cn("h-4 w-4", idx === 0 ? "text-amber-500" : "text-zinc-400")} />
                               Solution #{sol.solution_index}
                             </span>
-                            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-black text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-mono font-bold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                               {sol.score}%
                             </span>
                           </div>
 
-                          <div className="mt-4 space-y-1.5 text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 pt-3 dark:border-slate-800">
+                          <div className="mt-4 space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400 border-t border-zinc-100 pt-3 dark:border-zinc-800">
                             <div className="flex justify-between">
                               <span>Hard Conflicts:</span>
-                              <span className="font-bold text-emerald-600">0</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">0</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Total Scheduled Classes:</span>
-                              <span className="font-bold text-slate-800 dark:text-slate-200">{sol.entries_count}</span>
+                              <span>Total Classes:</span>
+                              <span className="font-bold text-zinc-900 dark:text-white font-mono">{sol.entries_count}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span>Soft Constraint Rank:</span>
-                              <span className="font-semibold text-slate-800 dark:text-slate-200">Rank {idx + 1}</span>
+                              <span>Rank:</span>
+                              <span className="font-semibold text-zinc-800 dark:text-zinc-200 font-mono">Rank {idx + 1}</span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div className="mt-5 pt-3 border-t border-zinc-100 dark:border-zinc-800">
                           <button
                             onClick={() => handleApplySolution(sol.solution_index)}
                             className={cn(
-                              "w-full rounded-xl py-2 text-xs font-bold transition-colors cursor-pointer",
+                              "w-full rounded-xl py-2 text-xs font-bold transition-all cursor-pointer",
                               idx === 0
-                                ? "bg-blue-600 text-white hover:bg-blue-700"
-                                : "bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                                ? "bg-emerald-700 text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 shadow-xs"
+                                : "bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
                             )}
                           >
-                            {idx === 0 ? "Active Best Solution" : "Apply This Schedule"}
+                            {idx === 0 ? "Apply Best Solution ✓" : "Apply This Schedule"}
                           </button>
                         </div>
                       </div>
@@ -327,14 +327,14 @@ export default function GeneratorPage() {
                 </div>
               </div>
             ) : (
-              <div className="rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900 flex flex-col items-center justify-center min-h-[350px]">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 mb-3">
+              <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 flex flex-col items-center justify-center min-h-[350px]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 mb-3 border border-zinc-200 dark:border-zinc-700">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                   No Active Generation Run
                 </h3>
-                <p className="max-w-sm mt-1 text-slate-400">
+                <p className="max-w-sm mt-1 text-zinc-400 dark:text-zinc-500">
                   Select your academic session and constraint weights on the left, then click &quot;Generate Routine Solutions&quot;.
                 </p>
               </div>

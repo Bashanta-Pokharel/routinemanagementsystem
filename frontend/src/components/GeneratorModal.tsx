@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { 
   Sparkles, X, CheckCircle2, Sliders, Play, 
-  Layers, Clock, ShieldCheck, ArrowRight, Trophy, Zap
+  Trophy, Zap
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { api } from "@/lib/api";
@@ -49,7 +49,7 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
 
       setResult(res);
       confetti({
-        particleCount: 100,
+        particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
       });
@@ -75,26 +75,26 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150 font-sans">
+      <div className="w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+        <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              <h2 className="text-base font-bold text-zinc-900 dark:text-white">
                 Generate Optimized Routine
               </h2>
-              <p className="text-xs text-slate-500">
-                Google OR-Tools CP-SAT & Dynamic Constraint Optimizer
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Constraint Optimizer &amp; Collision Elimination Engine
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 cursor-pointer"
+            className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -105,26 +105,26 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
           <div className="mt-5 space-y-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                   Routine Title
                 </label>
                 <input
                   type="text"
                   value={routineName}
                   onChange={(e) => setRoutineName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. Fall 2026 Master Routine"
+                  className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-900 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                  placeholder="e.g. Master Routine 2026"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                   Academic Session
                 </label>
                 <select
                   value={selectedYearId}
                   onChange={(e) => setSelectedYearId(Number(e.target.value))}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-xs text-zinc-900 shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
                 >
                   {academicYears.map((ay) => (
                     <option key={ay.id} value={ay.id}>
@@ -136,19 +136,19 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
             </div>
 
             {/* Soft Constraint Optimization Sliders */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-800 dark:bg-zinc-800/40">
               <div className="flex items-center gap-2 mb-3">
-                <Sliders className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                <Sliders className="h-4 w-4 text-zinc-900 dark:text-white" />
+                <h4 className="text-xs font-bold text-zinc-900 dark:text-white uppercase tracking-wider">
                   Soft Constraints Weight Tuning
                 </h4>
               </div>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <div className="flex justify-between font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <div className="flex justify-between font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                     <span>Teacher Preferred Slots Reward</span>
-                    <span className="font-bold text-blue-600">{weights.teacher_preference}/10</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">{weights.teacher_preference}/10</span>
                   </div>
                   <input
                     type="range"
@@ -156,14 +156,14 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
                     max="10"
                     value={weights.teacher_preference}
                     onChange={(e) => setWeights({ ...weights, teacher_preference: Number(e.target.value) })}
-                    className="w-full accent-blue-600 cursor-pointer"
+                    className="w-full accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <div className="flex justify-between font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                     <span>Subject Weekly Spread / Distribution</span>
-                    <span className="font-bold text-blue-600">{weights.subject_distribution}/10</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">{weights.subject_distribution}/10</span>
                   </div>
                   <input
                     type="range"
@@ -171,14 +171,14 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
                     max="10"
                     value={weights.subject_distribution}
                     onChange={(e) => setWeights({ ...weights, subject_distribution: Number(e.target.value) })}
-                    className="w-full accent-blue-600 cursor-pointer"
+                    className="w-full accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <div className="flex justify-between font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                     <span>Minimize Idle Gaps / Holes</span>
-                    <span className="font-bold text-blue-600">{weights.idle_gaps}/10</span>
+                    <span className="font-mono font-bold text-zinc-900 dark:text-white">{weights.idle_gaps}/10</span>
                   </div>
                   <input
                     type="range"
@@ -186,14 +186,14 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
                     max="10"
                     value={weights.idle_gaps}
                     onChange={(e) => setWeights({ ...weights, idle_gaps: Number(e.target.value) })}
-                    className="w-full accent-blue-600 cursor-pointer"
+                    className="w-full accent-zinc-900 dark:accent-zinc-100 cursor-pointer"
                   />
                 </div>
               </div>
             </div>
 
             {error && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-300">
+              <div className="rounded-xl border border-zinc-300 bg-zinc-100 p-3 text-xs text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100">
                 {error}
               </div>
             )}
@@ -202,7 +202,7 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 cursor-pointer"
+                className="rounded-xl border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 cursor-pointer"
               >
                 Cancel
               </button>
@@ -210,16 +210,16 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
                 type="button"
                 onClick={handleGenerate}
                 disabled={generating}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+                className="flex items-center gap-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 px-5 py-2.5 text-xs font-bold text-white dark:text-zinc-900 shadow-xs hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
               >
                 {generating ? (
                   <>
                     <Zap className="h-4 w-4 animate-spin" />
-                    Optimizing CP-SAT Schedule...
+                    Optimizing Schedule...
                   </>
                 ) : (
                   <>
-                    <Play className="h-4 w-4 fill-white" />
+                    <Play className="h-4 w-4 fill-current" />
                     Generate Conflict-Free Routine
                   </>
                 )}
@@ -229,14 +229,14 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
         ) : (
           /* Multi-Solution Results Preview */
           <div className="mt-5 space-y-4">
-            <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3.5 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800/50">
+            <div className="flex items-center justify-between rounded-xl bg-zinc-100 dark:bg-zinc-800/80 p-3.5 border border-zinc-200 dark:border-zinc-700">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="h-5 w-5 text-zinc-900 dark:text-white" />
                 <div>
-                  <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white">
                     Optimal Timetable Generated Successfully!
                   </span>
-                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
                     Solved in {result.execution_time_seconds}s &bull; {result.conflict_count} Conflicts &bull; Top Score {result.best_score}%
                   </p>
                 </div>
@@ -244,7 +244,7 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
                 Candidate Solutions ({result.solutions?.length || 0})
               </h4>
               <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -254,28 +254,28 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
                     className={cn(
                       "rounded-xl border p-3 flex flex-col justify-between transition-all",
                       idx === 0
-                        ? "border-blue-500 bg-blue-50/50 dark:border-blue-700 dark:bg-blue-950/30 ring-2 ring-blue-500/20"
-                        : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
+                        ? "border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/20 dark:ring-zinc-100/20 bg-zinc-50 dark:bg-zinc-850"
+                        : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
                     )}
                   >
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
-                          <Trophy className={cn("h-3.5 w-3.5", idx === 0 ? "text-amber-500" : "text-slate-400")} />
+                        <span className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1">
+                          <Trophy className="h-3.5 w-3.5" />
                           Solution #{sol.solution_index}
                         </span>
-                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <span className="rounded-md bg-zinc-100 border border-zinc-200 px-2 py-0.5 text-[10px] font-mono font-bold text-zinc-900 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200">
                           {sol.score}%
                         </span>
                       </div>
-                      <div className="mt-2 text-[10px] text-slate-500 space-y-0.5">
-                        <div>Conflicts: <span className="font-bold text-emerald-600">0</span></div>
+                      <div className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400 space-y-0.5 font-mono">
+                        <div>Conflicts: <span className="font-bold text-zinc-900 dark:text-white">0</span></div>
                         <div>Classes: {sol.entries_count}</div>
                       </div>
                     </div>
                     <button
                       onClick={() => handleApplySolution(sol.solution_index)}
-                      className="mt-3 w-full rounded-lg bg-slate-900 py-1.5 text-[11px] font-bold text-white hover:bg-blue-600 dark:bg-slate-800 dark:hover:bg-blue-600 transition-colors cursor-pointer"
+                      className="mt-3 w-full rounded-lg bg-zinc-900 py-1.5 text-[11px] font-bold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors cursor-pointer"
                     >
                       {idx === 0 ? "Active Best" : "Apply Solution"}
                     </button>
@@ -287,7 +287,7 @@ export function GeneratorModal({ isOpen, onClose, academicYears, onGenerated }: 
             <div className="flex justify-end pt-3">
               <button
                 onClick={onClose}
-                className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 cursor-pointer"
+                className="rounded-xl bg-zinc-900 px-5 py-2 text-xs font-bold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 cursor-pointer"
               >
                 View Generated Timetable &rarr;
               </button>

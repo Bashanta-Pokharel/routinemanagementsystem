@@ -1,4 +1,5 @@
 import io
+import re
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
@@ -497,22 +498,39 @@ def export_timetable_excel(id: int, section_id: Optional[int] = None, db: Sessio
     title_font = Font(name="Arial", size=13, bold=True)
     sub_font = Font(name="Arial", size=10, bold=True)
     header_font = Font(name="Arial", size=10, bold=True)
+    tu_header_font = Font(name="Arial", size=10, bold=True, color="FFFFFF")
+    data_font = Font(name="Arial", size=9)
+    bold_data_font = Font(name="Arial", size=9, bold=True)
+    
     header_fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
     interval_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    tu_header_fill = PatternFill(start_color="065F46", end_color="065F46", fill_type="solid")
+    sub_header_fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
+    
     thin_border_side = Side(border_style="thin", color="000000")
     thin_border = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=thin_border_side)
     center_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    left_align = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
     days = db.query(WorkingDay).filter(WorkingDay.is_active == True).order_by(WorkingDay.order_index).all()
+    all_entries = db.query(TimetableEntry).filter(TimetableEntry.timetable_id == id).all()
+
     sections = db.query(Section).all()
     if section_id:
         sections = [s for s in sections if s.id == section_id]
+    else:
+        active_sec_ids = {e.section_id for e in all_entries}
+        if active_sec_ids:
+            sections = [s for s in sections if s.id in active_sec_ids]
 
-    all_entries = db.query(TimetableEntry).filter(TimetableEntry.timetable_id == id).all()
+    if not sections:
+        sections = db.query(Section).all()[:1]
+
+    # Find max periods count across active days
+    max_periods = max([len(d.periods) for d in days], default=6) if days else 6
 
     current_row = 1
     for sec in sections:
-        # College Header
         prog_name = sec.semester.program.name if (sec.semester and sec.semester.program) else "Bachelors in Computer Applications (BCA)"
         sem_name = sec.semester.name if sec.semester else ""
         room_name = ""
@@ -520,46 +538,49 @@ def export_timetable_excel(id: int, section_id: Optional[int] = None, db: Sessio
         if sec_entries and sec_entries[0].room:
             room_name = sec_entries[0].room.room_number
 
-        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=7)
+        total_cols = max(max_periods + 1, 10)
+
+        # 1. College Header
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=total_cols)
         ws.cell(row=current_row, column=1, value=campus_name).font = title_font
         ws.cell(row=current_row, column=1).alignment = center_align
         current_row += 1
 
-        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=7)
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=total_cols)
         ws.cell(row=current_row, column=1, value=campus_addr).font = sub_font
         ws.cell(row=current_row, column=1).alignment = center_align
         current_row += 1
 
-        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=7)
-        ws.cell(row=current_row, column=1, value=f"{prog_name} {sem_name} - Sec {sec.name} Room No- {room_name}").font = sub_font
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=total_cols)
+        ws.cell(row=current_row, column=1, value=f"{prog_name} {sem_name} - Sec {sec.name} {f'Room No- {room_name}' if room_name else ''}").font = sub_font
         ws.cell(row=current_row, column=1).alignment = center_align
         current_row += 1
 
-        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=7)
-        ws.cell(row=current_row, column=1, value="Daily Class Routine").font = sub_font
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=total_cols)
+        ws.cell(row=current_row, column=1, value="DAILY CLASS ROUTINE").font = sub_font
         ws.cell(row=current_row, column=1).alignment = center_align
-        current_row += 1
+        current_row += 2
 
-        # Table Header
+        # 2. Main Routine Table Header
         ws.cell(row=current_row, column=1, value="Day/Time").font = header_font
         ws.cell(row=current_row, column=1).fill = header_fill
         ws.cell(row=current_row, column=1).border = thin_border
         ws.cell(row=current_row, column=1).alignment = center_align
 
-        # Get representative periods from first day
         rep_periods = days[0].periods if days else []
-        for p_idx, p in enumerate(rep_periods[:6]):
+        for p_idx in range(max_periods):
             col = p_idx + 2
-            cell = ws.cell(row=current_row, column=col, value=f"{p.start_time}-{p.end_time}")
+            p_label = f"{rep_periods[p_idx].start_time}-{rep_periods[p_idx].end_time}" if p_idx < len(rep_periods) else f"Period {p_idx+1}"
+            cell = ws.cell(row=current_row, column=col, value=p_label)
             cell.font = header_font
             cell.fill = header_fill
             cell.border = thin_border
             cell.alignment = center_align
 
         current_row += 1
-        table_start_row = current_row
 
         teachers_in_sec = {}
+        subject_summary = {}
 
         for day in days:
             ws.cell(row=current_row, column=1, value=day.name).font = header_font
@@ -567,15 +588,22 @@ def export_timetable_excel(id: int, section_id: Optional[int] = None, db: Sessio
             ws.cell(row=current_row, column=1).border = thin_border
             ws.cell(row=current_row, column=1).alignment = center_align
 
-            for p_idx, p in enumerate(day.periods[:6]):
+            day_periods = day.periods if day.periods else []
+            for p_idx in range(max_periods):
                 col = p_idx + 2
                 cell = ws.cell(row=current_row, column=col)
                 cell.border = thin_border
                 cell.alignment = center_align
 
+                if p_idx >= len(day_periods):
+                    cell.value = ""
+                    continue
+
+                p = day_periods[p_idx]
                 if p.period_type != "Teaching":
                     cell.value = "Interval"
                     cell.fill = interval_fill
+                    cell.font = Font(name="Arial", size=9, bold=True)
                 else:
                     match = next((e for e in all_entries if e.section_id == sec.id and e.period_id == p.id), None)
                     if match:
@@ -588,7 +616,26 @@ def export_timetable_excel(id: int, section_id: Optional[int] = None, db: Sessio
                                 "name": match.teacher.name,
                                 "contact": match.teacher.phone or "9841000000"
                             }
-                        cell.value = f"{match.subject.name}\n[TH] [{t_abbrev}]"
+                        is_pr = (match.course_type == "PR") or (match.room and "lab" in (match.room.name or "").lower())
+                        type_tag = "PR" if is_pr else "LT/TH"
+                        sub_name = match.subject.name if match.subject else "Class"
+                        cell.value = f"{sub_name}\n[{type_tag}] [{t_abbrev}]"
+                        cell.font = data_font
+
+                        # Track subject summary
+                        sub_key = f"{sub_name}_{type_tag}"
+                        if sub_key not in subject_summary:
+                            subject_summary[sub_key] = {
+                                "code": match.subject.code if match.subject else "BCA",
+                                "name": sub_name,
+                                "type": type_tag,
+                                "credits": match.subject.credit_hours if match.subject else 3,
+                                "weekly": 1,
+                                "teacher": t_name,
+                                "abbrev": t_abbrev
+                            }
+                        else:
+                            subject_summary[sub_key]["weekly"] += 1
                     else:
                         cell.value = ""
 
@@ -596,31 +643,82 @@ def export_timetable_excel(id: int, section_id: Optional[int] = None, db: Sessio
 
         current_row += 1
 
-        # Teacher Abbreviation Table & Legend
-        ws.cell(row=current_row, column=1, value="Abbrev").font = header_font
-        ws.cell(row=current_row, column=1).border = thin_border
-        ws.cell(row=current_row, column=2, value="Name").font = header_font
-        ws.cell(row=current_row, column=2).border = thin_border
-        ws.cell(row=current_row, column=3, value="Contact").font = header_font
-        ws.cell(row=current_row, column=3).border = thin_border
-
-        ws.cell(row=current_row, column=5, value="TH=Theory,").font = Font(name="Arial", size=9)
-        ws.cell(row=current_row, column=6, value="TU=Tutorial").font = Font(name="Arial", size=9)
+        # 3. TU Syllabus Course Structure Table
+        ws.merge_cells(start_row=current_row, start_column=1, end_row=current_row, end_column=10)
+        tu_title_cell = ws.cell(row=current_row, column=1, value="TU SYLLABUS COURSE STRUCTURE & 120-DAY SEMESTER SCHEDULE (120 WORKING DAYS WINDOW)")
+        tu_title_cell.font = tu_header_font
+        tu_title_cell.fill = tu_header_fill
+        tu_title_cell.alignment = left_align
         current_row += 1
 
-        for t_info in teachers_in_sec.values():
+        tu_headers = ["Code", "Subject / Course Title", "Nature", "Credit", "LT/TH", "PR", "Weekly", "Sem. Classes", "120-Day Coverage", "Faculty / Instructor"]
+        for col_idx, h_text in enumerate(tu_headers, start=1):
+            c = ws.cell(row=current_row, column=col_idx, value=h_text)
+            c.font = header_font
+            c.fill = sub_header_fill
+            c.border = thin_border
+            c.alignment = center_align if col_idx not in [2, 10] else left_align
+        current_row += 1
+
+        for s_info in subject_summary.values():
+            credits_val = s_info["credits"]
+            sem_classes = 80 if credits_val == 3 else (32 if credits_val <= 2 else 48)
+            weekly_p = s_info["weekly"]
+            req_weeks = (sem_classes + weekly_p - 1) // max(1, weekly_p)
+            req_days = req_weeks * 6
+
+            row_vals = [
+                s_info["code"],
+                s_info["name"],
+                s_info["type"],
+                f"{credits_val} Cr",
+                3 if s_info["type"] != "PR" else "-",
+                3 if s_info["type"] == "PR" else "-",
+                f"{weekly_p} P/Wk",
+                f"{sem_classes} Cls",
+                f"{req_weeks} Wks ({req_days}d) <= 120d",
+                f"{s_info['teacher']} [{s_info['abbrev']}]"
+            ]
+
+            for col_idx, val in enumerate(row_vals, start=1):
+                c = ws.cell(row=current_row, column=col_idx, value=val)
+                c.font = data_font
+                c.border = thin_border
+                c.alignment = center_align if col_idx not in [2, 10] else left_align
+            current_row += 1
+
+        current_row += 1
+
+        # 4. Teacher Abbreviation Table & Legend
+        ws.cell(row=current_row, column=1, value="Abbrev").font = header_font
+        ws.cell(row=current_row, column=1).fill = sub_header_fill
+        ws.cell(row=current_row, column=1).border = thin_border
+        ws.cell(row=current_row, column=2, value="Name").font = header_font
+        ws.cell(row=current_row, column=2).fill = sub_header_fill
+        ws.cell(row=current_row, column=2).border = thin_border
+        ws.cell(row=current_row, column=3, value="Contact").font = header_font
+        ws.cell(row=current_row, column=3).fill = sub_header_fill
+        ws.cell(row=current_row, column=3).border = thin_border
+
+        ws.cell(row=current_row, column=5, value="Course Types Legend:").font = bold_data_font
+        ws.cell(row=current_row, column=6, value="LT/TH = Lecture / Theory").font = data_font
+        current_row += 1
+
+        t_items = list(teachers_in_sec.values())
+        for idx, t_info in enumerate(t_items):
             ws.cell(row=current_row, column=1, value=t_info["abbrev"]).border = thin_border
+            ws.cell(row=current_row, column=1).alignment = center_align
             ws.cell(row=current_row, column=2, value=t_info["name"]).border = thin_border
             ws.cell(row=current_row, column=3, value=t_info["contact"]).border = thin_border
-            if t_info == list(teachers_in_sec.values())[0]:
-                ws.cell(row=current_row, column=5, value="PR=Practical").font = Font(name="Arial", size=9)
+            if idx == 0:
+                ws.cell(row=current_row, column=6, value="PR = Practical / Laboratory").font = data_font
             current_row += 1
 
         current_row += 3
 
     for col in ws.columns:
         col_letter = openpyxl.utils.get_column_letter(col[0].column)
-        ws.column_dimensions[col_letter].width = 18
+        ws.column_dimensions[col_letter].width = 16
 
     output = io.BytesIO()
     wb.save(output)
@@ -628,6 +726,7 @@ def export_timetable_excel(id: int, section_id: Optional[int] = None, db: Sessio
 
     headers = {"Content-Disposition": f"attachment; filename=routine_{id}.xlsx"}
     return Response(content=output.getvalue(), media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers=headers)
+
 
 # --- Export to PDF --- #
 @router.get("/{id}/export/pdf")
@@ -641,20 +740,30 @@ def export_timetable_pdf(id: int, section_id: Optional[int] = None, db: Session 
     campus_addr = campus.address if (campus and campus.address) else "Pradarshanimarga, Kathmandu Nepal"
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=24, leftMargin=24, topMargin=24, bottomMargin=24)
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter), rightMargin=20, leftMargin=20, topMargin=20, bottomMargin=20)
     story = []
     styles = getSampleStyleSheet()
 
-    title_style = ParagraphStyle("CampusTitle", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=14, leading=16, alignment=1)
-    sub_style = ParagraphStyle("CampusSub", parent=styles["Normal"], fontName="Helvetica", fontSize=10, leading=13, alignment=1)
-    routine_title_style = ParagraphStyle("RoutineTitle", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=11, leading=14, alignment=1)
+    title_style = ParagraphStyle("CampusTitle", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=13, leading=15, alignment=1)
+    sub_style = ParagraphStyle("CampusSub", parent=styles["Normal"], fontName="Helvetica", fontSize=9, leading=12, alignment=1)
+    routine_title_style = ParagraphStyle("RoutineTitle", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=10, leading=13, alignment=1)
+    tu_header_style = ParagraphStyle("TUHead", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=8, leading=10, textColor=colors.HexColor("#065F46"))
 
     days = db.query(WorkingDay).filter(WorkingDay.is_active == True).order_by(WorkingDay.order_index).all()
+    all_entries = db.query(TimetableEntry).filter(TimetableEntry.timetable_id == id).all()
+
     sections = db.query(Section).all()
     if section_id:
         sections = [s for s in sections if s.id == section_id]
+    else:
+        active_sec_ids = {e.section_id for e in all_entries}
+        if active_sec_ids:
+            sections = [s for s in sections if s.id in active_sec_ids]
 
-    all_entries = db.query(TimetableEntry).filter(TimetableEntry.timetable_id == id).all()
+    if not sections:
+        sections = db.query(Section).all()[:1]
+
+    max_periods = max([len(d.periods) for d in days], default=6) if days else 6
 
     for sec in sections:
         prog_name = sec.semester.program.name if (sec.semester and sec.semester.program) else "Bachelors in Computer Applications (BCA)"
@@ -664,22 +773,33 @@ def export_timetable_pdf(id: int, section_id: Optional[int] = None, db: Session 
         if sec_entries and sec_entries[0].room:
             room_name = sec_entries[0].room.room_number
 
-        story.append(Paragraph(f"<b>{campus_name}</b>", title_style))
+        story.append(Paragraph(f"<b>{campus_name.upper()}</b>", title_style))
         story.append(Paragraph(f"{campus_addr}", sub_style))
-        story.append(Paragraph(f"{prog_name} {sem_name} - Sec {sec.name} Room No- {room_name}", sub_style))
-        story.append(Paragraph("<b>Daily Class Routine</b>", routine_title_style))
-        story.append(Spacer(1, 8))
+        story.append(Paragraph(f"<b>{prog_name} {sem_name} - Sec {sec.name} {f'Room No- {room_name}' if room_name else ''}</b>", sub_style))
+        story.append(Paragraph("<b>DAILY CLASS ROUTINE</b>", routine_title_style))
+        story.append(Spacer(1, 6))
 
         # Build table data
         rep_periods = days[0].periods if days else []
-        header_row = ["Day/Time"] + [f"{p.start_time}-{p.end_time}" for p in rep_periods[:6]]
-        table_data = [header_row]
+        header_row = ["Day/Time"]
+        for p_idx in range(max_periods):
+            if p_idx < len(rep_periods):
+                header_row.append(f"{rep_periods[p_idx].start_time}-{rep_periods[p_idx].end_time}")
+            else:
+                header_row.append(f"Period {p_idx+1}")
 
+        table_data = [header_row]
         teachers_in_sec = {}
+        subject_summary = {}
 
         for day in days:
             row = [day.name]
-            for p_idx, p in enumerate(day.periods[:6]):
+            day_periods = day.periods if day.periods else []
+            for p_idx in range(max_periods):
+                if p_idx >= len(day_periods):
+                    row.append("")
+                    continue
+                p = day_periods[p_idx]
                 if p.period_type != "Teaching":
                     row.append("Interval")
                 else:
@@ -694,12 +814,35 @@ def export_timetable_pdf(id: int, section_id: Optional[int] = None, db: Session 
                                 "name": match.teacher.name,
                                 "contact": match.teacher.phone or "9841000000"
                             }
-                        row.append(f"{match.subject.name}\n[TH] [{t_abbrev}]")
+                        is_pr = (match.course_type == "PR") or (match.room and "lab" in (match.room.name or "").lower())
+                        type_tag = "PR" if is_pr else "LT/TH"
+                        sub_name = match.subject.name if match.subject else "Class"
+                        row.append(f"{sub_name}\n[{type_tag}] [{t_abbrev}]")
+
+                        sub_key = f"{sub_name}_{type_tag}"
+                        if sub_key not in subject_summary:
+                            subject_summary[sub_key] = {
+                                "code": match.subject.code if match.subject else "BCA",
+                                "name": sub_name,
+                                "type": type_tag,
+                                "credits": match.subject.credit_hours if match.subject else 3,
+                                "weekly": 1,
+                                "teacher": t_name,
+                                "abbrev": t_abbrev
+                            }
+                        else:
+                            subject_summary[sub_key]["weekly"] += 1
                     else:
                         row.append("")
             table_data.append(row)
 
-        pdf_table = Table(table_data, colWidths=[70] + [95] * (len(header_row) - 1))
+        col_count = len(header_row)
+        total_avail_width = 752
+        day_col_width = 65
+        slot_col_width = (total_avail_width - day_col_width) / max(1, (col_count - 1))
+        col_widths = [day_col_width] + [slot_col_width] * (col_count - 1)
+
+        pdf_table = Table(table_data, colWidths=col_widths)
         pdf_table.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F1F5F9")),
             ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#F1F5F9")),
@@ -708,39 +851,81 @@ def export_timetable_pdf(id: int, section_id: Optional[int] = None, db: Session 
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#000000")),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("FONTSIZE", (0, 0), (-1, -1), 7.5),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#334155")),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
         ]))
         story.append(pdf_table)
-        story.append(Spacer(1, 10))
+        story.append(Spacer(1, 8))
+
+        # TU Syllabus Structure Table
+        story.append(Paragraph("<b>TU SYLLABUS COURSE STRUCTURE &amp; 120-DAY SEMESTER SCHEDULE (120 WORKING DAYS WINDOW)</b>", tu_header_style))
+        story.append(Spacer(1, 3))
+
+        tu_pdf_rows = [["Code", "Subject / Course Title", "Nature", "Credit", "LT/TH", "PR", "Weekly", "Sem. Cls", "120-Day Coverage", "Faculty / Instructor"]]
+        for s_info in subject_summary.values():
+            credits_val = s_info["credits"]
+            sem_classes = 80 if credits_val == 3 else (32 if credits_val <= 2 else 48)
+            weekly_p = s_info["weekly"]
+            req_weeks = (sem_classes + weekly_p - 1) // max(1, weekly_p)
+            req_days = req_weeks * 6
+            tu_pdf_rows.append([
+                s_info["code"],
+                s_info["name"][:24],
+                s_info["type"],
+                f"{credits_val} Cr",
+                "3" if s_info["type"] != "PR" else "-",
+                "3" if s_info["type"] == "PR" else "-",
+                f"{weekly_p} P/Wk",
+                f"{sem_classes} Cls",
+                f"{req_weeks}W ({req_days}d) <= 120d",
+                f"{s_info['teacher']} [{s_info['abbrev']}]"[:25]
+            ])
+
+        tu_table = Table(tu_pdf_rows, colWidths=[45, 150, 42, 42, 35, 30, 48, 48, 100, 212])
+        tu_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#ECFDF5")),
+            ("TEXTCOLOR", (0, 0), (-1, -1), colors.HexColor("#0F172A")),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+            ("ALIGN", (9, 0), (9, -1), "LEFT"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#64748B")),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+            ("TOPPADDING", (0, 0), (-1, -1), 2),
+        ]))
+        story.append(tu_table)
+        story.append(Spacer(1, 8))
 
         # Teacher Abbrev & Legend Table
-        t_rows = [["Abbrev", "Name", "Contact", "", "Legend"]]
+        t_rows = [["Abbrev", "Name", "Contact", "", "Course Types Legend"]]
         t_list = list(teachers_in_sec.values())
         for idx, t_info in enumerate(t_list):
             legend_text = ""
             if idx == 0:
-                legend_text = "TH=Theory, TU=Tutorial"
+                legend_text = "LT/TH = Lecture / Theory"
             elif idx == 1:
-                legend_text = "PR=Practical"
+                legend_text = "PR = Practical / Lab"
             t_rows.append([t_info["abbrev"], t_info["name"], t_info["contact"], "", legend_text])
 
         if len(t_list) == 0:
-            t_rows.append(["-", "No teacher assigned", "-", "", "TH=Theory, PR=Practical"])
+            t_rows.append(["-", "No faculty assigned", "-", "", "LT/TH = Lecture / Theory, PR = Practical"])
 
-        t_table = Table(t_rows, colWidths=[60, 160, 90, 40, 160])
+        t_table = Table(t_rows, colWidths=[55, 170, 95, 30, 402])
         t_table.setStyle(TableStyle([
             ("FONTNAME", (0, 0), (2, 0), "Helvetica-Bold"),
-            ("GRID", (0, 0), (2, -1), 0.5, colors.HexColor("#000000")),
+            ("FONTNAME", (4, 0), (4, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (2, -1), 0.5, colors.HexColor("#64748B")),
             ("BACKGROUND", (0, 0), (2, 0), colors.HexColor("#F1F5F9")),
-            ("FONTSIZE", (0, 0), (-1, -1), 8),
+            ("FONTSIZE", (0, 0), (-1, -1), 7.5),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("ALIGN", (0, 0), (0, -1), "CENTER"),
         ]))
         story.append(t_table)
-        story.append(Spacer(1, 20))
+        story.append(Spacer(1, 14))
 
     doc.build(story)
     buffer.seek(0)

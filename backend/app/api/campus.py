@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.all_models import (
-    Campus, Faculty, Department, Program, AcademicYear, Semester, Section
+    Campus, Faculty, Department, Program, AcademicYear, Semester, Section, SystemSetting, User
 )
 from app.schemas.schemas import (
     CampusCreate, CampusResponse,
@@ -166,3 +166,145 @@ def delete_section(id: int, db: Session = Depends(get_db)):
     db.delete(s)
     db.commit()
     return {"status": "success", "message": "Section deleted"}
+
+# --- System & Campus Global Settings (Persisted in DB) --- #
+@router.get("/settings")
+def get_campus_settings(db: Session = Depends(get_db)):
+    """
+    Get all persisted campus, admin profile, and theme settings from database.
+    """
+    settings_rows = db.query(SystemSetting).all()
+    res = {
+        "campusName": "Ratna Rajyalaxmi Campus",
+        "campusAddress": "Pradarshanimarga, Kathmandu Nepal",
+        "routineTitle": "BCA Academic Routine 2026",
+        "adminName": "Dr. Ram Sharma",
+        "adminRole": "Campus Admin",
+        "adminEmail": "admin@campus.edu",
+        "accentTheme": "emerald",
+        "themeAccent": "emerald",
+        "campus_name": "Ratna Rajyalaxmi Campus",
+        "campus_address": "Pradarshanimarga, Kathmandu Nepal",
+        "routine_title": "BCA Academic Routine 2026",
+        "admin_name": "Dr. Ram Sharma",
+        "admin_role": "Campus Admin",
+        "admin_email": "admin@campus.edu",
+        "accent_theme": "emerald",
+    }
+    for row in settings_rows:
+        if row.value is not None:
+            res[row.key] = row.value
+            if row.key == "campusName":
+                res["campus_name"] = row.value
+            elif row.key == "campus_name":
+                res["campusName"] = row.value
+            elif row.key == "campusAddress":
+                res["campus_address"] = row.value
+            elif row.key == "campus_address":
+                res["campusAddress"] = row.value
+            elif row.key == "adminName":
+                res["admin_name"] = row.value
+            elif row.key == "admin_name":
+                res["adminName"] = row.value
+            elif row.key == "adminRole":
+                res["admin_role"] = row.value
+            elif row.key == "admin_role":
+                res["adminRole"] = row.value
+            elif row.key == "adminEmail":
+                res["admin_email"] = row.value
+            elif row.key == "admin_email":
+                res["adminEmail"] = row.value
+            elif row.key == "routineTitle":
+                res["routine_title"] = row.value
+            elif row.key == "routine_title":
+                res["routineTitle"] = row.value
+            elif row.key in ["accentTheme", "accent_theme", "themeAccent"]:
+                res["accentTheme"] = row.value
+                res["accent_theme"] = row.value
+                res["themeAccent"] = row.value
+
+    # Fallback/Sync with Campus table
+    c = db.query(Campus).first()
+    if c:
+        if "campusName" not in [r.key for r in settings_rows]:
+            res["campusName"] = c.name
+            res["campus_name"] = c.name
+        if "campusAddress" not in [r.key for r in settings_rows] and c.address:
+            res["campusAddress"] = c.address
+            res["campus_address"] = c.address
+
+    # Fallback/Sync with User table for admin
+    admin_user = db.query(User).filter((User.role == "super_admin") | (User.email == "admin@campus.edu")).first()
+    if admin_user:
+        if "adminName" not in [r.key for r in settings_rows]:
+            res["adminName"] = admin_user.full_name
+            res["admin_name"] = admin_user.full_name
+        if "adminEmail" not in [r.key for r in settings_rows]:
+            res["adminEmail"] = admin_user.email
+            res["admin_email"] = admin_user.email
+
+    return {
+        "status": "success",
+        "data": res,
+        **res
+    }
+
+@router.put("/settings")
+def update_campus_settings(payload: dict, db: Session = Depends(get_db)):
+    """
+    Persist campus, admin profile, and theme settings directly to database.
+    """
+    key_mapping = {
+        "campus_name": "campusName",
+        "campusName": "campusName",
+        "campus_address": "campusAddress",
+        "campusAddress": "campusAddress",
+        "routine_title": "routineTitle",
+        "routineTitle": "routineTitle",
+        "admin_name": "adminName",
+        "adminName": "adminName",
+        "admin_role": "adminRole",
+        "adminRole": "adminRole",
+        "admin_email": "adminEmail",
+        "adminEmail": "adminEmail",
+        "accent_theme": "accentTheme",
+        "accentTheme": "accentTheme",
+        "themeAccent": "accentTheme",
+    }
+    for k, v in payload.items():
+        if k in key_mapping and v is not None:
+            canonical_key = key_mapping[k]
+            setting = db.query(SystemSetting).filter(SystemSetting.key == canonical_key).first()
+            if setting:
+                setting.value = str(v)
+            else:
+                setting = SystemSetting(key=canonical_key, value=str(v))
+                db.add(setting)
+
+    # Sync Campus record
+    c_name = payload.get("campusName") or payload.get("campus_name")
+    c_addr = payload.get("campusAddress") or payload.get("campus_address")
+    if c_name or c_addr:
+        c = db.query(Campus).first()
+        if not c and c_name:
+            c = Campus(name=str(c_name), code="CAMPUS_MAIN", address=str(c_addr or ""))
+            db.add(c)
+        elif c:
+            if c_name:
+                c.name = str(c_name)
+            if c_addr is not None:
+                c.address = str(c_addr)
+
+    # Sync User record for admin
+    a_name = payload.get("adminName") or payload.get("admin_name")
+    a_email = payload.get("adminEmail") or payload.get("admin_email")
+    if a_name or a_email:
+        admin_user = db.query(User).filter((User.role == "super_admin") | (User.email == "admin@campus.edu")).first()
+        if admin_user:
+            if a_name:
+                admin_user.full_name = str(a_name)
+            if a_email:
+                admin_user.email = str(a_email)
+
+    db.commit()
+    return get_campus_settings(db)

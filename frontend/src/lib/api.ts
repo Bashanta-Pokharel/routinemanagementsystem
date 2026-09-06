@@ -33,6 +33,33 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
   }
 }
 
+export const getExportUrl = (timetableId: number, format: "excel" | "pdf") =>
+  `${API_BASE}/timetable/${timetableId}/export/${format}`;
+
+export async function downloadExportFile(timetableId: number, format: "excel" | "pdf", filename?: string) {
+  const url = getExportUrl(timetableId, format);
+  const ext = format === "excel" ? "xlsx" : "pdf";
+  const defaultFilename = `campus_routine_${timetableId}.${ext}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Export failed with HTTP ${res.status}`);
+    }
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filename || defaultFilename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 1000);
+  } catch (err: any) {
+    // Fallback: direct window download
+    window.open(url, "_blank");
+  }
+}
+
 // API Service Functions
 export const api = {
   // Auth
@@ -91,6 +118,10 @@ export const api = {
     method: "POST",
     body: JSON.stringify({ source_day_id: sourceDayId, target_day_ids: targetDayIds }),
   }),
+  applyShiftPreset: (shift: string, dayId?: number, applyAll: boolean = false) => fetchApi<any>("/periods/apply-shift", {
+    method: "POST",
+    body: JSON.stringify({ shift, day_id: dayId, apply_all: applyAll }),
+  }),
 
   // Timetables & Scheduling
   getTimetables: () => fetchApi<any[]>("/timetable"),
@@ -107,8 +138,29 @@ export const api = {
   getRules: () => fetchApi<any[]>("/rules"),
   updateRules: (updates: any[]) => fetchApi<any>("/rules/update", { method: "POST", body: JSON.stringify(updates) }),
 
-  // System & Audit
-  getNotifications: () => fetchApi<any[]>("/system/notifications"),
+  // System, Settings & Audit
+  getSettings: async () => {
+    try {
+      return await fetchApi<any>("/academic/settings");
+    } catch (e) {
+      return null;
+    }
+  },
+  updateSettings: (data: any) => fetchApi<any>("/academic/settings", { method: "PUT", body: JSON.stringify(data) }),
+  checkHealth: async () => {
+    try {
+      return await fetchApi<any>("/health");
+    } catch (e) {
+      return { status: "offline" };
+    }
+  },
+  getNotifications: async () => {
+    try {
+      return await fetchApi<any[]>("/system/notifications");
+    } catch (e) {
+      return [];
+    }
+  },
   markNotificationsRead: () => fetchApi<any>("/system/notifications/read-all", { method: "POST" }),
   getAuditLogs: () => fetchApi<any[]>("/system/audit-logs"),
   seedDatabase: () => fetchApi<any>("/seed", { method: "POST" }),

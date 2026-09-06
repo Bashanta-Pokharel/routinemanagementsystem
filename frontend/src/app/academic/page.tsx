@@ -175,7 +175,9 @@ export default function AcademicStructurePage() {
         {actionMessage && (
           <div
             className={`fixed top-4 right-4 z-50 flex items-center gap-2 rounded-2xl px-4 py-3 text-xs font-bold text-white shadow-xl animate-in slide-in-from-top-2 ${
-              actionMessage.type === "success" ? "bg-emerald-600" : "bg-rose-600"
+              actionMessage.type === "success" 
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900" 
+                : "bg-zinc-800 text-zinc-100 border border-zinc-700"
             }`}
           >
             {actionMessage.type === "success" ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
@@ -242,7 +244,7 @@ export default function AcademicStructurePage() {
                         {programs.length > 1 && (
                           <button
                             onClick={() => handleDeleteProgram(prog.id, prog.name)}
-                            className="p-1 text-zinc-400 hover:text-rose-600 transition-colors cursor-pointer"
+                            className="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
                             title="Delete Program"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -314,7 +316,7 @@ export default function AcademicStructurePage() {
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => handleDeleteSection(s.id)}
-                        className="p-1 text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer transition-colors"
+                        className="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer transition-colors"
                         title="Delete Section"
                       >
                         <Trash2 className="h-4 w-4" />

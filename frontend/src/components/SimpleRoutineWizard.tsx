@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Sparkles, Plus, Trash2, Clock, Calendar, CheckCircle2, 
   Printer, Download, ArrowRight, User, BookOpen, Layers, Coffee, Zap,
   RotateCcw, ShieldCheck, Check, AlertCircle, Eye, FileSpreadsheet, LayoutGrid
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { fetchApi } from "@/lib/api";
+import { fetchApi, downloadExportFile } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { CampusRoutineSheet } from "@/components/CampusRoutineSheet";
 import { LiveWatchModal } from "@/components/LiveWatchModal";
@@ -60,7 +60,7 @@ export function SimpleRoutineWizard() {
       contact: "9848811584",
       speciality: "Microprocessor & Comp Architecture",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -70,7 +70,7 @@ export function SimpleRoutineWizard() {
       contact: "9841299009",
       speciality: "Discrete Structure & Networks",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -80,7 +80,7 @@ export function SimpleRoutineWizard() {
       contact: "9851223176",
       speciality: "OOP in Java & Software Eng",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -90,7 +90,7 @@ export function SimpleRoutineWizard() {
       contact: "9844638055",
       speciality: "Statistics & Numerical Methods",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -100,7 +100,7 @@ export function SimpleRoutineWizard() {
       contact: "9841695609",
       speciality: "Web Technology & UI/UX",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -110,7 +110,7 @@ export function SimpleRoutineWizard() {
       contact: "9841334455",
       speciality: "Python, AI & Machine Learning",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -120,7 +120,7 @@ export function SimpleRoutineWizard() {
       contact: "9841556677",
       speciality: "DBMS, Dotnet & Cloud",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -130,7 +130,7 @@ export function SimpleRoutineWizard() {
       contact: "9841778899",
       speciality: "OS & Cyber Security",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -140,7 +140,7 @@ export function SimpleRoutineWizard() {
       contact: "9841990011",
       speciality: "Mathematics",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
     {
@@ -150,12 +150,12 @@ export function SimpleRoutineWizard() {
       contact: "9841223344",
       speciality: "Communication, Economics & Ethics",
       free_time_start: "06:30 AM",
-      free_time_end: "10:30 AM",
+      free_time_end: "04:30 PM",
       max_classes_per_day: 4,
     },
   ]);
 
-  // Step 2 & 3: Official BCA Semesters (1 to 8) with all Syllabus Subjects
+  // Step 2 & 3: Official BCA Semesters (1 to 8) with all Syllabus Subjects (Theory & Practical only - Zero Tutorial)
   const [semesters, setSemesters] = useState<SemesterBlock[]>([
     {
       semester_number: 1,
@@ -169,7 +169,12 @@ export function SimpleRoutineWizard() {
         { id: "s1_3", name: "Digital Logic", code: "BCA 103", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
         { id: "s1_4", name: "Mathematics-I", code: "BCA 104", course_type: "TH", weekly_periods: 3, teacher_name: "Pujan Mahat" },
         { id: "s1_5", name: "Professional Communication and Ethics", code: "BCA 105", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
-        { id: "s1_6", name: "Hardware Workshop", code: "BCA 106", course_type: "PR", weekly_periods: 2, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s1_1_pr", name: "Computer Fundamentals and Applications (Lab)", code: "BCA 101", course_type: "PR", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s1_2_pr", name: "Programming in C (Lab)", code: "BCA 102", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s1_3_pr", name: "Digital Logic (Lab / Practical)", code: "BCA 103", course_type: "PR", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s1_4_pr", name: "Mathematics-I (Practical / Problem Lab)", code: "BCA 104", course_type: "PR", weekly_periods: 3, teacher_name: "Pujan Mahat" },
+        { id: "s1_5_pr", name: "Professional Communication (Language Lab)", code: "BCA 105", course_type: "PR", weekly_periods: 3, teacher_name: "Sabita Thapa" },
+        { id: "s1_6", name: "Hardware Workshop", code: "BCA 106", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
       ]
     },
     {
@@ -184,7 +189,12 @@ export function SimpleRoutineWizard() {
         { id: "s2_3", name: "OOP in Java", code: "BCA 153", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
         { id: "s2_4", name: "Mathematics-II", code: "BCA 154", course_type: "TH", weekly_periods: 3, teacher_name: "Pujan Mahat" },
         { id: "s2_5", name: "UX/UI Design", code: "BCA 155", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
-        { id: "s2_6", name: "Principles of Management", code: "BCA 156", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s2_1_pr", name: "Discrete Structure (Lab)", code: "BCA 151", course_type: "PR", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s2_2_pr", name: "Microprocessor & Architecture (Lab)", code: "BCA 152", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s2_3_pr", name: "OOP in Java (Lab)", code: "BCA 153", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s2_4_pr", name: "Mathematics-II (Practical)", code: "BCA 154", course_type: "PR", weekly_periods: 3, teacher_name: "Pujan Mahat" },
+        { id: "s2_5_pr", name: "UX/UI Design (Lab)", code: "BCA 155", course_type: "PR", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s2_6", name: "Principles of Management", code: "BCA 156", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
       ]
     },
     {
@@ -199,7 +209,12 @@ export function SimpleRoutineWizard() {
         { id: "s3_3", name: "Web Technology-I", code: "BCA 203", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
         { id: "s3_4", name: "System Analysis and Design", code: "BCA 204", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
         { id: "s3_5", name: "Probability and Statistics", code: "BCA 205", course_type: "TH", weekly_periods: 3, teacher_name: "Sharmila Bhattarai" },
-        { id: "s3_6", name: "Applied Economics", code: "BCA 206", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s3_1_pr", name: "Data Structure & Algorithms (Lab)", code: "BCA 201", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s3_2_pr", name: "Database Management System (Lab)", code: "BCA 202", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s3_3_pr", name: "Web Technology-I (Lab)", code: "BCA 203", course_type: "PR", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s3_4_pr", name: "System Analysis & Design (Lab)", code: "BCA 204", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s3_5_pr", name: "Probability & Statistics (Lab)", code: "BCA 205", course_type: "PR", weekly_periods: 3, teacher_name: "Sharmila Bhattarai" },
+        { id: "s3_6", name: "Applied Economics", code: "BCA 206", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
       ]
     },
     {
@@ -214,6 +229,11 @@ export function SimpleRoutineWizard() {
         { id: "s4_3", name: "Numerical Methods", code: "BCA 253", course_type: "TH", weekly_periods: 3, teacher_name: "Sharmila Bhattarai" },
         { id: "s4_4", name: "Python Programming", code: "BCA 254", course_type: "TH", weekly_periods: 3, teacher_name: "Prakash Sharma" },
         { id: "s4_5", name: "Web Technology-II", code: "BCA 255", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s4_1_pr", name: "Operating Systems (Lab)", code: "BCA 251", course_type: "PR", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+        { id: "s4_2_pr", name: "Software Engineering (Lab / Case Study)", code: "BCA 252", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s4_3_pr", name: "Numerical Methods (Lab)", code: "BCA 253", course_type: "PR", weekly_periods: 3, teacher_name: "Sharmila Bhattarai" },
+        { id: "s4_4_pr", name: "Python Programming (Lab)", code: "BCA 254", course_type: "PR", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s4_5_pr", name: "Web Technology-II (Lab)", code: "BCA 255", course_type: "PR", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
         { id: "s4_6", name: "Project-I (Project Lab)", code: "BCA 256", course_type: "PR", weekly_periods: 3, teacher_name: "Prakash Sharma" },
       ]
     },
@@ -229,7 +249,12 @@ export function SimpleRoutineWizard() {
         { id: "s5_3", name: "Advance Java Programming", code: "BCA 303", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
         { id: "s5_4", name: "MIS and e-Business", code: "BCA 304", course_type: "TH", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
         { id: "s5_5", name: "Society and Technology", code: "BCA 305", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
-        { id: "s5_6", name: "Project-II (AI & Java Lab)", code: "BCA 306", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s5_1_pr", name: "Computer Network (Lab)", code: "BCA 301", course_type: "PR", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s5_2_pr", name: "Artificial Intelligence (Lab)", code: "BCA 302", course_type: "PR", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s5_3_pr", name: "Advance Java Programming (Lab)", code: "BCA 303", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s5_4_pr", name: "MIS and e-Business (Lab)", code: "BCA 304", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s5_5_pr", name: "Society and Technology (Practical)", code: "BCA 305", course_type: "PR", weekly_periods: 3, teacher_name: "Sabita Thapa" },
+        { id: "s5_6", name: "Project-II (Project Lab)", code: "BCA 306", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
       ]
     },
     {
@@ -242,8 +267,13 @@ export function SimpleRoutineWizard() {
         { id: "s6_1", name: "Computer Graphics and animation", code: "BCA 351", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
         { id: "s6_2", name: "Mobile Programming", code: "BCA 352", course_type: "TH", weekly_periods: 3, teacher_name: "Prakash Sharma" },
         { id: "s6_3", name: "Cryptography and Network Security", code: "BCA 353", course_type: "TH", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
-        { id: "s6_4", name: "Technical Writing", code: "BCA 354", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s6_4", name: "Technical Writing", code: "BCA 354", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
         { id: "s6_5", name: "Distributed System", code: "BCA 355", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s6_1_pr", name: "Computer Graphics (Lab)", code: "BCA 351", course_type: "PR", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s6_2_pr", name: "Mobile Programming (Lab)", code: "BCA 352", course_type: "PR", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s6_3_pr", name: "Cryptography & Security (Lab)", code: "BCA 353", course_type: "PR", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+        { id: "s6_4_pr", name: "Technical Writing (Communication Lab)", code: "BCA 354", course_type: "PR", weekly_periods: 3, teacher_name: "Sabita Thapa" },
+        { id: "s6_5_pr", name: "Distributed System (Lab)", code: "BCA 355", course_type: "PR", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
         { id: "s6_6", name: "Project-III (Mobile & Security Lab)", code: "BCA 356", course_type: "PR", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
       ]
     },
@@ -256,9 +286,14 @@ export function SimpleRoutineWizard() {
       subjects: [
         { id: "s7_1", name: "Cyber Security and Ethical Hacking", code: "BCA 401", course_type: "TH", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
         { id: "s7_2", name: "Software Project Management", code: "BCA 402", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
-        { id: "s7_3", name: "Financial Accounting", code: "BCA 403", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s7_3", name: "Financial Accounting", code: "BCA 403", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
         { id: "s7_4", name: "Machine Learning (Elective-I)", code: "BCA 405", course_type: "TH", weekly_periods: 3, teacher_name: "Prakash Sharma" },
         { id: "s7_5", name: "Dotnet Technology (Elective-II)", code: "BCA 406", course_type: "TH", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s7_1_pr", name: "Cyber Security & Ethical Hacking (Lab)", code: "BCA 401", course_type: "PR", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+        { id: "s7_2_pr", name: "Software Project Management (Lab)", code: "BCA 402", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s7_3_pr", name: "Financial Accounting (Practical)", code: "BCA 403", course_type: "PR", weekly_periods: 3, teacher_name: "Sabita Thapa" },
+        { id: "s7_4_pr", name: "Machine Learning (Lab)", code: "BCA 405", course_type: "PR", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s7_5_pr", name: "Dotnet Technology (Lab)", code: "BCA 406", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
         { id: "s7_6", name: "Project-IV (Cyber & ML Lab)", code: "BCA 404", course_type: "PR", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
       ]
     },
@@ -272,7 +307,10 @@ export function SimpleRoutineWizard() {
         { id: "s8_1", name: "Cloud Computing", code: "BCA 451", course_type: "TH", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
         { id: "s8_2", name: "Network Administration (Elective-III)", code: "BCA 453", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
         { id: "s8_3", name: "Digital Marketing and SEO (Elective-IV)", code: "BCA 454", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
-        { id: "s8_4", name: "Internship & Cloud Project", code: "BCA 452", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s8_1_pr", name: "Cloud Computing (Lab)", code: "BCA 451", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s8_2_pr", name: "Network Administration (Lab)", code: "BCA 453", course_type: "PR", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s8_3_pr", name: "Digital Marketing (Lab)", code: "BCA 454", course_type: "PR", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s8_4", name: "Internship & Project", code: "BCA 452", course_type: "PR", weekly_periods: 4, teacher_name: "Dipendra Nepal" },
       ]
     }
   ]);
@@ -358,6 +396,76 @@ export function SimpleRoutineWizard() {
   const [activeViewMode, setActiveViewMode] = useState<"sheet" | "table" | "teacher">("sheet");
   const [isLiveWatchOpen, setIsLiveWatchOpen] = useState(false);
 
+  // Storage keys for persistence across logins & sessions
+  const ROUTINE_CACHE_KEY = "bca_generated_routine_cache";
+  const SEMESTERS_STATE_KEY = "bca_wizard_semesters_state";
+  const TEACHERS_STATE_KEY = "bca_wizard_teachers_state";
+  const SHIFT_STATE_KEY = "bca_wizard_shift_state";
+  const DAYS_STATE_KEY = "bca_wizard_days_state";
+  const PERIODS_STATE_KEY = "bca_wizard_periods_state";
+
+  // Automatically restore previously generated routine and form configuration on mount
+  useEffect(() => {
+    try {
+      // 1. Restore Semesters State (e.g. Active Sem 1, Sem 3, Sem 5 with assigned subjects)
+      const savedSemesters = localStorage.getItem(SEMESTERS_STATE_KEY);
+      if (savedSemesters) {
+        const parsed = JSON.parse(savedSemesters);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSemesters(parsed);
+        }
+      }
+
+      // 2. Restore Teachers
+      const savedTeachers = localStorage.getItem(TEACHERS_STATE_KEY);
+      if (savedTeachers) {
+        const parsed = JSON.parse(savedTeachers);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTeachers(parsed);
+        }
+      }
+
+      // 3. Restore Shift
+      const savedShift = localStorage.getItem(SHIFT_STATE_KEY);
+      if (savedShift) {
+        setSelectedShift(savedShift as any);
+      }
+
+      // 4. Restore Days
+      const savedDays = localStorage.getItem(DAYS_STATE_KEY);
+      if (savedDays) {
+        const parsed = JSON.parse(savedDays);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setSelectedDays(parsed);
+        }
+      }
+
+      // 5. Restore Periods
+      const savedPeriods = localStorage.getItem(PERIODS_STATE_KEY);
+      if (savedPeriods) {
+        const parsed = JSON.parse(savedPeriods);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setPeriods(parsed);
+        }
+      }
+
+      // 6. Restore Previously Generated Routine Result
+      const savedRoutine = localStorage.getItem(ROUTINE_CACHE_KEY);
+      if (savedRoutine) {
+        const parsed = JSON.parse(savedRoutine);
+        if (parsed && (parsed.semester_routines || parsed.teacher_routines || parsed.timetable_id)) {
+          setGeneratedRoutine(parsed);
+          const semKeys = Object.keys(parsed.semester_routines || {});
+          if (semKeys.length > 0) setSelectedSemesterTab(semKeys[0]);
+          const tKeys = Object.keys(parsed.teacher_routines || {});
+          if (tKeys.length > 0) setSelectedTeacherTab(tKeys[0]);
+        }
+      }
+    } catch (e) {
+      console.warn("Could not restore previous routine cache:", e);
+    }
+  }, []);
+
   const allAvailableDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   // Helper auto-abbreviation
@@ -379,6 +487,8 @@ export function SimpleRoutineWizard() {
     try {
       const res = await fetchApi<any>("/seed/clean-reset", { method: "POST" });
       setResetMessage(res.message || "All default data cleared successfully!");
+      setGeneratedRoutine(null);
+      localStorage.removeItem(ROUTINE_CACHE_KEY);
       setTimeout(() => setResetMessage(null), 5000);
     } catch (err: any) {
       alert("Reset failed: " + (err.message || "Unknown error"));
@@ -392,6 +502,11 @@ export function SimpleRoutineWizard() {
     setTeachers([]);
     setSemesters(semesters.map(s => ({ ...s, subjects: [] })));
     setGeneratedRoutine(null);
+    try {
+      localStorage.removeItem(ROUTINE_CACHE_KEY);
+      localStorage.removeItem(SEMESTERS_STATE_KEY);
+      localStorage.removeItem(TEACHERS_STATE_KEY);
+    } catch (e) {}
   };
 
   // Teacher Handlers
@@ -616,6 +731,18 @@ export function SimpleRoutineWizard() {
       const tKeys = Object.keys(result.teacher_routines || {});
       if (tKeys.length > 0) setSelectedTeacherTab(tKeys[0]);
 
+      // Persist generated routine and active inputs to localStorage so it restores on next login/refresh
+      try {
+        localStorage.setItem(ROUTINE_CACHE_KEY, JSON.stringify(result));
+        localStorage.setItem(SEMESTERS_STATE_KEY, JSON.stringify(semesters));
+        localStorage.setItem(TEACHERS_STATE_KEY, JSON.stringify(teachers));
+        localStorage.setItem(SHIFT_STATE_KEY, selectedShift);
+        localStorage.setItem(DAYS_STATE_KEY, JSON.stringify(selectedDays));
+        localStorage.setItem(PERIODS_STATE_KEY, JSON.stringify(periods));
+      } catch (e) {
+        console.warn("Could not cache routine to local storage:", e);
+      }
+
       confetti({
         particleCount: 90,
         spread: 70,
@@ -630,6 +757,16 @@ export function SimpleRoutineWizard() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadExcel = () => {
+    if (!generatedRoutine?.timetable_id) return;
+    downloadExportFile(generatedRoutine.timetable_id, "excel", `${campusInfo.routineTitle || "BCA_Routine"}.xlsx`);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!generatedRoutine?.timetable_id) return;
+    downloadExportFile(generatedRoutine.timetable_id, "pdf", `${campusInfo.routineTitle || "BCA_Routine"}.pdf`);
   };
 
   const activeSemesters = semesters.filter(s => s.is_active);
@@ -655,16 +792,19 @@ export function SimpleRoutineWizard() {
           <div className="flex items-center gap-2">
             <Link
               href="/live-watch"
-              className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60 transition-colors shadow-2xs"
             >
-              <Eye className="h-3.5 w-3.5 text-emerald-600" />
-              Live Routine Watch
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
+              </span>
+              <span>Live Watch</span>
             </Link>
             <button
               type="button"
               onClick={handleCleanResetDatabase}
               disabled={resettingDb}
-              className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300 cursor-pointer transition-colors"
+              className="flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer transition-colors"
               title="Delete all previous mock data and reset DB"
             >
               <RotateCcw className={cn("h-3.5 w-3.5", resettingDb && "animate-spin")} />
@@ -681,8 +821,8 @@ export function SimpleRoutineWizard() {
         </div>
 
         {resetMessage && (
-          <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 p-2.5 text-xs font-semibold text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-zinc-100 p-2.5 text-xs font-semibold text-zinc-900 border border-zinc-300 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-zinc-700 dark:text-zinc-300" />
             {resetMessage}
           </div>
         )}
@@ -831,7 +971,7 @@ export function SimpleRoutineWizard() {
                         Free Time Window
                       </label>
                       {assignedLoad > 0 && (
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                        <span className="text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
                           {assignedLoad} hrs assigned
                         </span>
                       )}
@@ -897,12 +1037,12 @@ export function SimpleRoutineWizard() {
                 className={cn(
                   "flex flex-col items-center justify-center rounded-xl border p-2.5 transition-all text-center cursor-pointer",
                   sem.is_active
-                    ? "border-zinc-900 bg-zinc-900 text-white font-bold dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    ? "border-emerald-600 bg-emerald-50 text-emerald-950 font-bold dark:border-emerald-500 dark:bg-emerald-950/70 dark:text-emerald-100 shadow-2xs ring-1 ring-emerald-500/50"
                     : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400"
                 )}
               >
                 <span className="text-xs font-bold">Sem {sem.semester_number}</span>
-                <span className="text-[10px] opacity-80 mt-0.5">
+                <span className="text-[10px] opacity-80 mt-0.5 font-medium">
                   {sem.is_active ? `Active (${sem.subjects.length} sub)` : "Inactive"}
                 </span>
               </button>
@@ -1003,9 +1143,8 @@ export function SimpleRoutineWizard() {
                                 onChange={(e) => handleUpdateSubject(sem.semester_number, sub.id, "course_type", e.target.value as any)}
                                 className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-bold text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                               >
-                                <option value="TH">[TH] Theory</option>
-                                <option value="PR">[PR] Practical</option>
-                                <option value="TU">[TU] Tutorial</option>
+                                <option value="TH">[LT/TH] Lecture / Theory</option>
+                                <option value="PR">[PR] Practical / Lab</option>
                               </select>
                             </div>
 
@@ -1095,26 +1234,26 @@ export function SimpleRoutineWizard() {
                 <Clock className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
                 Select Campus Shift:
               </label>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+              <span className="text-[10px] font-bold text-zinc-800 bg-zinc-100 px-2 py-0.5 rounded-full border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700">
                 ✓ Zero Student Waiting Gaps
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <button
                 type="button"
                 onClick={() => handleShiftSelect("morning")}
                 className={cn(
                   "flex items-center justify-between rounded-xl border p-3 text-left transition-all cursor-pointer",
                   selectedShift === "morning"
-                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    ? "border-emerald-600 bg-emerald-50 text-emerald-950 font-bold dark:border-emerald-500 dark:bg-emerald-950/70 dark:text-emerald-100 shadow-2xs ring-1 ring-emerald-500/50"
                     : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
                 )}
               >
                 <div>
                   <div className="text-xs font-black">🌅 Morning Shift</div>
-                  <div className="text-[11px] opacity-80 mt-0.5">06:30 AM &ndash; 10:30 AM (5 Periods + Break)</div>
+                  <div className="text-[11px] opacity-80 mt-0.5">06:30 AM &ndash; 10:35 AM (5 Periods + Break)</div>
                 </div>
-                {selectedShift === "morning" && <Check className="h-4 w-4 shrink-0" />}
+                {selectedShift === "morning" && <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
               </button>
 
               <button
@@ -1123,15 +1262,15 @@ export function SimpleRoutineWizard() {
                 className={cn(
                   "flex items-center justify-between rounded-xl border p-3 text-left transition-all cursor-pointer",
                   selectedShift === "day"
-                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    ? "border-emerald-600 bg-emerald-50 text-emerald-950 font-bold dark:border-emerald-500 dark:bg-emerald-950/70 dark:text-emerald-100 shadow-2xs ring-1 ring-emerald-500/50"
                     : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
                 )}
               >
                 <div>
                   <div className="text-xs font-black">☀️ Day Shift</div>
-                  <div className="text-[11px] opacity-80 mt-0.5">10:00 AM &ndash; 03:30 PM (5 Periods + Lunch)</div>
+                  <div className="text-[11px] opacity-80 mt-0.5">10:45 AM &ndash; 03:00 PM (5 Periods + Break)</div>
                 </div>
-                {selectedShift === "day" && <Check className="h-4 w-4 shrink-0" />}
+                {selectedShift === "day" && <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
               </button>
 
               <button
@@ -1140,7 +1279,7 @@ export function SimpleRoutineWizard() {
                 className={cn(
                   "flex items-center justify-between rounded-xl border p-3 text-left transition-all cursor-pointer",
                   selectedShift === "evening"
-                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    ? "border-emerald-600 bg-emerald-50 text-emerald-950 font-bold dark:border-emerald-500 dark:bg-emerald-950/70 dark:text-emerald-100 shadow-2xs ring-1 ring-emerald-500/50"
                     : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
                 )}
               >
@@ -1148,7 +1287,7 @@ export function SimpleRoutineWizard() {
                   <div className="text-xs font-black">🌙 Evening Shift</div>
                   <div className="text-[11px] opacity-80 mt-0.5">04:00 PM &ndash; 08:05 PM (5 Periods + Break)</div>
                 </div>
-                {selectedShift === "evening" && <Check className="h-4 w-4 shrink-0" />}
+                {selectedShift === "evening" && <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />}
               </button>
             </div>
           </div>
@@ -1167,9 +1306,9 @@ export function SimpleRoutineWizard() {
                     type="button"
                     onClick={() => toggleDay(day)}
                     className={cn(
-                      "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
+                      "rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer",
                       isSelected
-                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                        ? "bg-emerald-700 text-white dark:bg-emerald-600 dark:text-white shadow-2xs"
                         : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
                     )}
                   >
@@ -1188,7 +1327,7 @@ export function SimpleRoutineWizard() {
                 className={cn(
                   "flex flex-col justify-between rounded-lg border p-2 text-xs",
                   p.type === "Break"
-                    ? "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                    ? "border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
                     : "border-zinc-200 bg-zinc-50/70 text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-100"
                 )}
               >
@@ -1208,8 +1347,8 @@ export function SimpleRoutineWizard() {
 
         {/* Generate Button */}
         {error && (
-          <div className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-800 border border-red-200 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300">
-            <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+          <div className="flex items-center gap-2 rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-900 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900 dark:text-rose-200">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
             <span>{error}</span>
           </div>
         )}
@@ -1218,7 +1357,7 @@ export function SimpleRoutineWizard() {
           type="button"
           onClick={handleCalculateRoutine}
           disabled={isGenerating}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 disabled:opacity-50 cursor-pointer transition-all"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 py-3.5 text-sm font-bold text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 cursor-pointer transition-all active:scale-[0.99]"
         >
           <Sparkles className={cn("h-4 w-4", isGenerating && "animate-spin")} />
           {isGenerating ? "Calculating Clash-Free Schedule..." : "⚡ Generate BCA Multi-Semester Routine"}
@@ -1235,7 +1374,7 @@ export function SimpleRoutineWizard() {
                 <h3 className="text-lg font-black text-zinc-900 dark:text-white">
                   {generatedRoutine.name || campusInfo.routineTitle || "BCA College Timetable"}
                 </h3>
-                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
+                <span className="flex items-center gap-1 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-bold text-zinc-900 border border-zinc-300 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100">
                   <Check className="h-3 w-3" />
                   0 Conflicts (Clash-Free)
                 </span>
@@ -1248,9 +1387,9 @@ export function SimpleRoutineWizard() {
               <button
                 type="button"
                 onClick={() => setIsLiveWatchOpen(true)}
-                className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 cursor-pointer transition-colors shadow-xs"
+                className="flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-900 hover:bg-zinc-200 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 cursor-pointer transition-colors shadow-xs"
               >
-                <Eye className="h-3.5 w-3.5 text-emerald-600" />
+                <Eye className="h-3.5 w-3.5 text-zinc-700 dark:text-zinc-300" />
                 Live Watch Routine
               </button>
               <button
@@ -1261,22 +1400,24 @@ export function SimpleRoutineWizard() {
                 <Printer className="h-3.5 w-3.5" />
                 Print
               </button>
-              <a
-                href={`/api/timetable/${generatedRoutine.timetable_id}/export/excel`}
-                download
-                className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 cursor-pointer shadow-xs"
+              <button
+                type="button"
+                onClick={handleDownloadExcel}
+                className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 cursor-pointer shadow-xs transition-colors"
+                title="Download Excel Routine (.xlsx)"
               >
                 <Download className="h-3.5 w-3.5" />
                 Export Excel
-              </a>
-              <a
-                href={`/api/timetable/${generatedRoutine.timetable_id}/export/pdf`}
-                download
-                className="flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer shadow-xs"
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                className="flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer shadow-xs transition-colors"
+                title="Download PDF Routine (.pdf)"
               >
                 <Download className="h-3.5 w-3.5" />
                 Export PDF
-              </a>
+              </button>
             </div>
           </div>
 
@@ -1337,9 +1478,9 @@ export function SimpleRoutineWizard() {
                       key={secName}
                       onClick={() => setSelectedSemesterTab(secName)}
                       className={cn(
-                        "rounded-lg px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer",
+                        "rounded-lg px-3 py-1 text-xs font-bold transition-all cursor-pointer",
                         selectedSemesterTab === secName
-                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                          ? "bg-rose-600 text-white shadow-xs ring-2 ring-rose-400/50 dark:bg-rose-600 dark:text-white"
                           : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
                       )}
                     >
@@ -1362,9 +1503,9 @@ export function SimpleRoutineWizard() {
                       key={tName}
                       onClick={() => setSelectedTeacherTab(tName)}
                       className={cn(
-                        "rounded-lg px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer",
+                        "rounded-lg px-3 py-1 text-xs font-bold transition-all cursor-pointer",
                         selectedTeacherTab === tName
-                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                          ? "bg-rose-600 text-white shadow-xs ring-2 ring-rose-400/50 dark:bg-rose-600 dark:text-white"
                           : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
                       )}
                     >
@@ -1391,7 +1532,7 @@ export function SimpleRoutineWizard() {
                 periods={generatedRoutine.periods || periods}
                 entries={generatedRoutine.semester_routines[selectedSemesterTab].entries || []}
                 teacherDirectory={generatedRoutine.semester_routines[selectedSemesterTab].teacher_directory || []}
-                legend={generatedRoutine.legend || { TH: "Theory", TU: "Tutorial", PR: "Practical" }}
+                legend={generatedRoutine.legend || { "LT/TH": "Lecture / Theory", PR: "Practical / Lab" }}
               />
             </div>
           )}

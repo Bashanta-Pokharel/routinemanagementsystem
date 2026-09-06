@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { BookOpen, Plus, Trash2, Edit3, Layers, DoorOpen, Users } from "lucide-react";
+import { BookOpen, Plus, Trash2, DoorOpen } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { api } from "@/lib/api";
 
@@ -23,7 +23,7 @@ export default function SubjectsPage() {
     practical_periods: 1,
     required_room_type_id: 1,
     max_classes_per_day: 2,
-    color_code: "#3B82F6",
+    color_code: "#09090b",
     eligible_teacher_ids: [] as number[],
   });
 
@@ -74,21 +74,21 @@ export default function SubjectsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 font-sans">
         {/* Header */}
-        <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-blue-600" />
-              Course & Subject Curriculum
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-zinc-900 dark:text-white" />
+              Course &amp; Subject Curriculum
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
               Configure weekly credit hours, lecture vs practical period splits, required lab room types, and eligible faculty.
             </p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-500/25 hover:bg-blue-700 active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 active:scale-95 transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" />
             Add Course
@@ -96,55 +96,48 @@ export default function SubjectsPage() {
         </div>
 
         {/* Subjects Table */}
-        <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-zinc-200 bg-white shadow-xs overflow-hidden dark:border-zinc-800 dark:bg-zinc-900">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold text-slate-700 uppercase tracking-wider dark:bg-slate-800/60 dark:border-slate-800 dark:text-slate-300">
-                  <th className="py-3 px-4">Subject & Code</th>
-                  <th className="py-3 px-4">Program & Semester</th>
+                <tr className="bg-zinc-100 border-b border-zinc-200 text-[11px] font-bold text-zinc-700 uppercase tracking-wider dark:bg-zinc-800/80 dark:border-zinc-800 dark:text-zinc-300">
+                  <th className="py-3 px-4">Subject &amp; Code</th>
+                  <th className="py-3 px-4">Program &amp; Semester</th>
                   <th className="py-3 px-4">Weekly Breakdown</th>
                   <th className="py-3 px-4">Required Room Type</th>
                   <th className="py-3 px-4">Eligible Teachers</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                 {subjects.map((sub) => (
-                  <tr key={sub.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                    <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">
+                  <tr key={sub.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                    <td className="py-3.5 px-4 font-semibold text-zinc-900 dark:text-white">
                       <div className="flex items-center gap-2.5">
-                        <span
-                          className="h-3 w-3 rounded-full shrink-0"
-                          style={{ backgroundColor: sub.color_code || "#3B82F6" }}
-                        />
+                        <span className="h-2.5 w-2.5 rounded-full bg-zinc-900 dark:bg-zinc-100 shrink-0" />
                         <div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-white">
+                          <div className="font-bold text-sm text-zinc-900 dark:text-white">
                             {sub.name}
                           </div>
-                          <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                          <div className="text-[11px] font-mono font-bold text-zinc-600 dark:text-zinc-400">
                             {sub.code}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600 dark:text-slate-300">
-                      {sub.program_name || "Program"} &ndash; {sub.semester_name || `Sem ${sub.semester_id}`}
+                    <td className="py-3.5 px-4 font-medium text-zinc-600 dark:text-zinc-300">
+                      {sub.program_name || "BCA"} &ndash; {sub.semester_name || `Sem ${sub.semester_id}`}
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="space-y-0.5 text-[11px]">
-                        <div><span className="font-bold">{sub.weekly_periods}</span> Total Periods / Week</div>
-                        <div className="text-slate-400">
+                        <div><span className="font-bold text-zinc-900 dark:text-white">{sub.weekly_periods}</span> Total Periods / Week</div>
+                        <div className="text-zinc-500 dark:text-zinc-400">
                           {sub.lecture_periods} Lecture + {sub.practical_periods} Lab
                         </div>
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold ${
-                        sub.required_room_type_name?.includes("Lab")
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-                          : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                      }`}>
+                      <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold bg-zinc-100 border border-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200">
                         <DoorOpen className="h-3 w-3" />
                         {sub.required_room_type_name || "Classroom"}
                       </span>
@@ -155,20 +148,20 @@ export default function SubjectsPage() {
                           sub.eligible_teacher_names.map((tName: string, tIdx: number) => (
                             <span
                               key={tIdx}
-                              className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                              className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700"
                             >
                               {tName}
                             </span>
                           ))
                         ) : (
-                          <span className="text-[10px] text-slate-400">Any faculty</span>
+                          <span className="text-[10px] text-zinc-400">Any faculty</span>
                         )}
                       </div>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => handleDeleteSubject(sub.id)}
-                        className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
+                        className="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer transition-colors"
                         title="Delete Course"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -183,76 +176,76 @@ export default function SubjectsPage() {
 
         {/* Create Subject Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+            <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-4">
                 Register New Course / Subject
               </h3>
               <form onSubmit={handleCreateSubject} className="space-y-4 text-xs">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Course Code</label>
+                    <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Course Code</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. CACS101"
+                      placeholder="e.g. BCA 101"
                       value={formData.code}
                       onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      className="w-full rounded-xl border border-zinc-200 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Subject Name</label>
+                    <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Subject Name</label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Computer Graphics"
+                      placeholder="e.g. Digital Logic"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      className="w-full rounded-xl border border-zinc-200 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Weekly Periods</label>
+                    <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Weekly Periods</label>
                     <input
                       type="number"
                       required
                       value={formData.weekly_periods}
                       onChange={(e) => setFormData({ ...formData, weekly_periods: parseInt(e.target.value) })}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      className="w-full rounded-xl border border-zinc-200 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Lecture Periods</label>
+                    <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Lecture Periods</label>
                     <input
                       type="number"
                       required
                       value={formData.lecture_periods}
                       onChange={(e) => setFormData({ ...formData, lecture_periods: parseInt(e.target.value) })}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      className="w-full rounded-xl border border-zinc-200 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Lab Periods</label>
+                    <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Lab Periods</label>
                     <input
                       type="number"
                       required
                       value={formData.practical_periods}
                       onChange={(e) => setFormData({ ...formData, practical_periods: parseInt(e.target.value) })}
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      className="w-full rounded-xl border border-zinc-200 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Required Room Type</label>
+                  <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Required Room Type</label>
                   <select
                     value={formData.required_room_type_id}
                     onChange={(e) => setFormData({ ...formData, required_room_type_id: Number(e.target.value) })}
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    className="w-full rounded-xl border border-zinc-200 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                   >
                     {roomTypes.map((rt) => (
                       <option key={rt.id} value={rt.id}>
@@ -266,13 +259,13 @@ export default function SubjectsPage() {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="rounded-xl border border-slate-200 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 cursor-pointer"
+                    className="rounded-xl border border-zinc-200 px-4 py-2 font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded-xl bg-blue-600 px-5 py-2 font-bold text-white hover:bg-blue-700 cursor-pointer"
+                    className="rounded-xl bg-zinc-900 px-5 py-2 font-bold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 cursor-pointer"
                   >
                     Save Subject
                   </button>

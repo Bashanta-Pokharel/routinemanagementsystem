@@ -143,3 +143,72 @@ def clone_day_periods(source_day_id: int, target_day_ids: List[int], db: Session
 
     db.commit()
     return {"status": "success", "message": f"Cloned {len(source_periods)} periods across {len(target_day_ids)} days."}
+
+@router.post("/apply-shift")
+def apply_shift_preset(payload: dict, db: Session = Depends(get_db)):
+    """
+    Apply standard Morning, Day, or Evening shift period templates to selected day or all days.
+    """
+    shift = payload.get("shift", "morning").lower()
+    day_id = payload.get("day_id")
+    apply_all = payload.get("apply_all", False)
+
+    presets = {
+        "morning": [
+            {"name": "Period 1", "start_time": "06:30 AM", "end_time": "07:15 AM", "order_index": 1, "period_type": "Teaching"},
+            {"name": "Period 2", "start_time": "07:15 AM", "end_time": "08:00 AM", "order_index": 2, "period_type": "Teaching"},
+            {"name": "Period 3", "start_time": "08:00 AM", "end_time": "08:45 AM", "order_index": 3, "period_type": "Teaching"},
+            {"name": "Interval", "start_time": "08:45 AM", "end_time": "09:05 AM", "order_index": 4, "period_type": "Break"},
+            {"name": "Period 4", "start_time": "09:05 AM", "end_time": "09:50 AM", "order_index": 5, "period_type": "Teaching"},
+            {"name": "Period 5", "start_time": "09:50 AM", "end_time": "10:30 AM", "order_index": 6, "period_type": "Teaching"},
+        ],
+        "day": [
+            {"name": "Period 1", "start_time": "10:00 AM", "end_time": "11:00 AM", "order_index": 1, "period_type": "Teaching"},
+            {"name": "Period 2", "start_time": "11:00 AM", "end_time": "12:00 PM", "order_index": 2, "period_type": "Teaching"},
+            {"name": "Period 3", "start_time": "12:00 PM", "end_time": "01:00 PM", "order_index": 3, "period_type": "Teaching"},
+            {"name": "Interval", "start_time": "01:00 PM", "end_time": "01:30 PM", "order_index": 4, "period_type": "Break"},
+            {"name": "Period 4", "start_time": "01:30 PM", "end_time": "02:30 PM", "order_index": 5, "period_type": "Teaching"},
+            {"name": "Period 5", "start_time": "02:30 PM", "end_time": "03:30 PM", "order_index": 6, "period_type": "Teaching"},
+        ],
+        "evening": [
+            {"name": "Period 1", "start_time": "04:00 PM", "end_time": "04:45 PM", "order_index": 1, "period_type": "Teaching"},
+            {"name": "Period 2", "start_time": "04:45 PM", "end_time": "05:30 PM", "order_index": 2, "period_type": "Teaching"},
+            {"name": "Period 3", "start_time": "05:30 PM", "end_time": "06:15 PM", "order_index": 3, "period_type": "Teaching"},
+            {"name": "Interval", "start_time": "06:15 PM", "end_time": "06:35 PM", "order_index": 4, "period_type": "Break"},
+            {"name": "Period 4", "start_time": "06:35 PM", "end_time": "07:20 PM", "order_index": 5, "period_type": "Teaching"},
+            {"name": "Period 5", "start_time": "07:20 PM", "end_time": "08:05 PM", "order_index": 6, "period_type": "Teaching"},
+        ]
+    }
+
+    template = presets.get(shift, presets["morning"])
+
+    if apply_all:
+        days = db.query(WorkingDay).filter(WorkingDay.is_active == True).all()
+        target_day_ids = [d.id for d in days]
+    elif day_id:
+        target_day_ids = [int(day_id)]
+    else:
+        days = db.query(WorkingDay).filter(WorkingDay.is_active == True).all()
+        target_day_ids = [d.id for d in days]
+
+    for d_id in target_day_ids:
+        # Clear existing periods for this day
+        db.query(Period).filter(Period.day_id == d_id).delete()
+        for p_data in template:
+            np = Period(
+                day_id=d_id,
+                name=p_data["name"],
+                start_time=p_data["start_time"],
+                end_time=p_data["end_time"],
+                order_index=p_data["order_index"],
+                period_type=p_data["period_type"]
+            )
+            db.add(np)
+            db.flush()
+            teachers = db.query(Teacher).all()
+            for t in teachers:
+                db.add(TeacherAvailability(teacher_id=t.id, period_id=np.id, status="available"))
+
+    db.commit()
+    return {"status": "success", "message": f"Applied {shift.capitalize()} Shift template across {len(target_day_ids)} days."}
+

@@ -397,6 +397,40 @@ def generate_simple_wizard_routine(
                     "explanation": f"Assigned Demo / Guest Teacher for {sub.name} on {p.day.name} to avoid duplicate daily classes ({teacher.name} unavailable)."
                 })
 
+        # Pass 3: Ultimate coverage guarantee - ensure all needed_periods are satisfied
+        if assigned_for_sub < needed_periods:
+            free_slots = [p for p in teaching_periods if p.id not in slot_assignments]
+            free_slots.sort(key=lambda p: (sec_day_sub_count[(p.day_id, sub.id)], sec_day_class_count[p.day_id], p.order_index, p.day.order_index))
+            for p in free_slots:
+                if assigned_for_sub >= needed_periods:
+                    break
+                if p.id in slot_assignments:
+                    continue
+
+                slot_assignments[p.id] = {"subject": sub, "teacher": demo_t_rec, "period": p}
+                sec_day_sub_count[(p.day_id, sub.id)] += 1
+                sec_day_class_count[p.day_id] += 1
+                assigned_for_sub += 1
+
+                scheduled_entries.append({
+                    "section_id": section.id,
+                    "subject_id": sub.id,
+                    "subject_name": sub.name,
+                    "subject_code": sub.code,
+                    "teacher_id": demo_t_rec.id,
+                    "teacher_name": "Demo / Guest Faculty",
+                    "teacher_abbreviation": "DEMO",
+                    "room_id": room.id,
+                    "room_number": room.room_number,
+                    "period_id": p.id,
+                    "period_name": p.name,
+                    "start_time": p.start_time,
+                    "end_time": p.end_time,
+                    "day_id": p.day_id,
+                    "day_name": p.day.name,
+                    "explanation": f"Guaranteed completion allocation for {sub.name}."
+                })
+
     # 6. Save Timetable Record to Database
     tt_name = routine_title or f"Routine - {class_name} ({datetime.utcnow().strftime('%Y-%m-%d')})"
     timetable = Timetable(

@@ -4,10 +4,11 @@ import React, { useState, useEffect, useMemo } from "react";
 import { 
   Clock, Maximize2, Minimize2, Radio, Calendar, 
   Layers, User, Sparkles, X, ChevronRight, Volume2, ShieldCheck, Share2, Check,
-  RotateCcw, Sun, Sunrise, Sunset, PlayCircle
+  RotateCcw, Sun, Sunrise, Sunset, PlayCircle, Printer, FileText, FileSpreadsheet
 } from "lucide-react";
 import { CampusRoutineSheet } from "./CampusRoutineSheet";
 import { useCampusInfo } from "@/lib/campusSettings";
+import { downloadExportFile } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 interface LiveWatchModalProps {
@@ -81,8 +82,22 @@ export function LiveWatchModal({
     ? currentTime.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })
     : activeDate.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
 
+  // Get effective timetable (from prop or cached generated routine)
+  const effectiveTimetable = useMemo(() => {
+    if (timetable && (timetable.entries?.length || timetable.all_entries?.length || timetable.semester_routines)) {
+      return timetable;
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("bca_generated_routine_cache");
+        if (cached) return JSON.parse(cached);
+      } catch (e) {}
+    }
+    return timetable;
+  }, [timetable]);
+
   // Get current section entries
-  const entries = timetable?.entries || timetable?.all_entries || [];
+  const entries = effectiveTimetable?.entries || effectiveTimetable?.all_entries || [];
 
   // Available sections extracted from entries or DB sections
   const availableSections = useMemo(() => {
@@ -297,6 +312,20 @@ export function LiveWatchModal({
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadExcel = () => {
+    const tid = timetable?.id || timetable?.timetable_id || 1;
+    downloadExportFile(tid, "excel", `${timetable?.campus_name || campusInfo.campusName || "Campus"}_Routine.xlsx`);
+  };
+
+  const handleDownloadPdf = () => {
+    const tid = timetable?.id || timetable?.timetable_id || 1;
+    downloadExportFile(tid, "pdf", `${timetable?.campus_name || campusInfo.campusName || "Campus"}_Routine.pdf`);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -308,16 +337,16 @@ export function LiveWatchModal({
         )}
       >
         {/* Top Live Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-900 text-white px-5 py-3.5 border-b border-zinc-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white px-5 py-3.5 border-b border-emerald-800/60 shadow-md">
           <div className="flex items-center gap-3">
             <span className={cn(
-              "flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider text-white transition-all",
-              isLiveClock ? "bg-rose-600 animate-pulse" : "bg-amber-600"
+              "flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider transition-all",
+              isLiveClock ? "bg-white text-emerald-950 animate-pulse" : "bg-emerald-800 text-emerald-100 border border-emerald-600/50"
             )}>
               <Radio className="h-3 w-3" />
               {isLiveClock ? "LIVE WATCH" : "SIMULATOR"}
             </span>
-            <span className="text-sm font-bold text-zinc-100 hidden sm:inline">
+            <span className="text-sm font-bold text-emerald-50 hidden sm:inline">
               {timetable?.campus_name || campusInfo.campusName} &mdash; Routine Monitor
             </span>
           </div>
@@ -328,7 +357,7 @@ export function LiveWatchModal({
             {!isLiveClock && (
               <button
                 onClick={handleResetToNow}
-                className="flex items-center gap-1 rounded-lg bg-emerald-600 text-white px-2 py-1 text-xs font-bold hover:bg-emerald-700 transition-colors cursor-pointer"
+                className="flex items-center gap-1 rounded-lg bg-emerald-100 text-emerald-950 px-2 py-1 text-xs font-bold hover:bg-white transition-colors cursor-pointer"
                 title="Reset to Real-Time Clock"
               >
                 <RotateCcw className="h-3 w-3" />
@@ -337,8 +366,8 @@ export function LiveWatchModal({
             )}
 
             {/* Date Input */}
-            <div className="flex items-center gap-1.5 rounded-lg bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-200 border border-zinc-700">
-              <Calendar className="h-3.5 w-3.5 text-zinc-400" />
+            <div className="flex items-center gap-1.5 rounded-lg bg-emerald-950/80 px-2 py-1 text-xs font-semibold text-emerald-100 border border-emerald-700/60">
+              <Calendar className="h-3.5 w-3.5 text-emerald-400" />
               <input
                 type="date"
                 value={customDateStr}
@@ -349,36 +378,60 @@ export function LiveWatchModal({
             </div>
 
             {/* Digital Clock */}
-            <div className="flex items-center gap-2 bg-zinc-800/90 px-3 py-1 rounded-lg border border-zinc-700 font-mono text-xs text-zinc-200">
-              <Clock className={cn("h-3.5 w-3.5", isLiveClock ? "text-emerald-400" : "text-amber-400")} />
+            <div className="flex items-center gap-2 bg-emerald-950/80 px-3 py-1 rounded-lg border border-emerald-700/60 font-mono text-xs text-emerald-100">
+              <Clock className="h-3.5 w-3.5 text-emerald-400" />
               <span className="font-bold" suppressHydrationWarning>
                 {mounted ? timeString : "--:--:--"}
               </span>
-              <span className="text-zinc-500">|</span>
+              <span className="text-emerald-500">|</span>
               <span className="font-sans font-medium" suppressHydrationWarning>
                 {mounted ? dateString : "Loading date..."}
               </span>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1">
+            {/* Actions: Print, PDF, Excel, Share, Fullscreen, Close */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={handlePrint}
+                className="flex items-center gap-1 rounded-lg bg-emerald-800/60 hover:bg-emerald-700 px-2 py-1 text-xs font-bold text-emerald-100 transition-colors cursor-pointer border border-emerald-600/40"
+                title="Print Routine"
+              >
+                <Printer className="h-3.5 w-3.5 text-emerald-300" />
+                <span className="hidden sm:inline">Print</span>
+              </button>
+              <button
+                onClick={handleDownloadPdf}
+                className="flex items-center gap-1 rounded-lg bg-emerald-800/60 hover:bg-emerald-700 px-2 py-1 text-xs font-bold text-emerald-100 transition-colors cursor-pointer border border-emerald-600/40"
+                title="Download as PDF"
+              >
+                <FileText className="h-3.5 w-3.5 text-rose-300" />
+                <span className="hidden sm:inline">PDF</span>
+              </button>
+              <button
+                onClick={handleDownloadExcel}
+                className="flex items-center gap-1 rounded-lg bg-emerald-800/60 hover:bg-emerald-700 px-2 py-1 text-xs font-bold text-emerald-100 transition-colors cursor-pointer border border-emerald-600/40"
+                title="Download as Excel (.xlsx)"
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-300" />
+                <span className="hidden sm:inline">Excel</span>
+              </button>
               <button
                 onClick={handleShare}
-                className="rounded-lg p-1.5 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                className="rounded-lg p-1.5 text-emerald-200 hover:bg-emerald-800 hover:text-white transition-colors cursor-pointer"
                 title="Copy Live Watch Link"
               >
-                {copiedLink ? <Check className="h-4 w-4 text-emerald-400" /> : <Share2 className="h-4 w-4" />}
+                {copiedLink ? <Check className="h-4 w-4 text-white" /> : <Share2 className="h-4 w-4" />}
               </button>
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="rounded-lg p-1.5 text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                className="rounded-lg p-1.5 text-emerald-200 hover:bg-emerald-800 hover:text-white transition-colors cursor-pointer"
                 title={isFullscreen ? "Exit Fullscreen" : "Fullscreen View"}
               >
                 {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
               <button
                 onClick={onClose}
-                className="rounded-lg p-1.5 text-zinc-400 hover:bg-red-500/20 hover:text-red-300 transition-colors cursor-pointer"
+                className="rounded-lg p-1.5 text-emerald-300 hover:bg-emerald-800 hover:text-white transition-colors cursor-pointer"
                 title="Close Live Watch"
               >
                 <X className="h-4 w-4" />
@@ -389,54 +442,57 @@ export function LiveWatchModal({
 
         {/* Live Status Tracker Banner & Shift Switcher */}
         <div className={cn(
-          "border-b px-5 py-3 flex flex-wrap items-center justify-between gap-4 transition-all",
+          "border-b px-5 py-3.5 flex flex-wrap items-center justify-between gap-4 transition-all",
           ongoingClass 
-            ? "bg-emerald-50/80 border-emerald-300" 
-            : "bg-white border-zinc-200"
+            ? "bg-gradient-to-r from-emerald-50/80 via-teal-50/50 to-emerald-50/30 dark:from-emerald-950/40 dark:via-zinc-900 dark:to-zinc-900 border-emerald-200 dark:border-emerald-800/60" 
+            : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800"
         )}>
           <div className="flex items-center gap-3.5">
             <div className={cn(
-              "flex h-11 w-11 items-center justify-center rounded-xl text-white font-bold shadow-sm shrink-0",
-              ongoingClass ? "bg-emerald-600 animate-pulse" : isLiveClock ? "bg-zinc-900" : "bg-amber-700"
+              "flex h-11 w-11 items-center justify-center rounded-2xl font-bold shadow-md shrink-0",
+              ongoingClass ? "bg-gradient-to-tr from-emerald-600 via-teal-600 to-emerald-700 text-white animate-pulse" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
             )}>
-              {ongoingClass ? <PlayCircle className="h-6 w-6 text-white" /> : <Clock className="h-5 w-5 text-emerald-400" />}
+              {ongoingClass ? <PlayCircle className="h-6 w-6" /> : <Clock className="h-5 w-5" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   {isLiveClock ? "Real-Time Session" : "Simulated Session"} &bull; {currentDayName}
                 </span>
                 {ongoingClass ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[9px] font-black text-white uppercase tracking-wider animate-pulse">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping" />
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-700 px-2.5 py-0.5 text-[9px] font-black text-white uppercase tracking-wider shadow-xs animate-pulse">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                    </span>
                     Live Class Active ({remainingMinutes > 0 ? `${remainingMinutes} mins left` : "Ongoing"})
                   </span>
                 ) : currentActivePeriod?.period_type === "Break" || currentActivePeriod?.name?.toLowerCase().includes("interval") ? (
-                  <span className="rounded bg-amber-100 px-2 py-0.2 text-[9px] font-bold text-amber-800 uppercase">
+                  <span className="rounded-full bg-amber-100 dark:bg-amber-950 px-2.5 py-0.5 text-[9px] font-black text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 uppercase">
                     ☕ Campus Interval / Break
                   </span>
                 ) : (
-                  <span className="rounded bg-zinc-100 px-2 py-0.2 text-[9px] font-bold text-zinc-600 uppercase">
+                  <span className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 text-[9px] font-bold text-zinc-600 dark:text-zinc-300 uppercase">
                     {currentActivePeriod ? `${currentActivePeriod.name}` : "Off-Hours"}
                   </span>
                 )}
               </div>
 
               {/* Ongoing class line */}
-              <div className="mt-0.5">
+              <div className="mt-1">
                 {ongoingClass ? (
-                  <div className="flex flex-wrap items-center gap-x-2 text-xs font-black text-zinc-950">
-                    <span>{ongoingClass.subject_name}</span>
-                    <span className="rounded bg-emerald-100 px-1 py-0.2 text-[10px] font-bold text-emerald-800">
+                  <div className="flex flex-wrap items-center gap-x-2 text-xs font-black text-zinc-950 dark:text-white">
+                    <span className="text-emerald-700 dark:text-emerald-300 text-sm font-black">{ongoingClass.subject_name}</span>
+                    <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-1.5 py-0.5 text-[10px] font-black text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                       [{ongoingClass.course_type || "TH"}]
                     </span>
-                    <span className="text-zinc-700 font-semibold">&bull; Faculty: {ongoingClass.teacher_name} ({ongoingClass.teacher_abbreviation || "TCH"})</span>
-                    <span className="text-zinc-600 font-medium">&bull; Room: {ongoingClass.room_number || selectedSection?.room_name || "Room 101"}</span>
+                    <span className="text-zinc-700 dark:text-zinc-300 font-semibold">&bull; Faculty: {ongoingClass.teacher_name} ({ongoingClass.teacher_abbreviation || "TCH"})</span>
+                    <span className="text-zinc-600 dark:text-zinc-400 font-medium">&bull; Room: {ongoingClass.room_number || selectedSection?.room_name || "Room 101"}</span>
                   </div>
                 ) : currentActivePeriod?.period_type === "Break" || currentActivePeriod?.name?.toLowerCase().includes("interval") ? (
-                  <span className="text-xs text-amber-700 font-bold">☕ Interval / Campus Break ({remainingMinutes} mins remaining)</span>
+                  <span className="text-xs text-amber-700 dark:text-amber-300 font-bold">☕ Interval / Campus Break ({remainingMinutes} mins remaining)</span>
                 ) : (
-                  <span className="text-xs text-zinc-600">No active lecture in progress for this section right now.</span>
+                  <span className="text-xs text-zinc-600 dark:text-zinc-400">No active lecture in progress for this section right now.</span>
                 )}
               </div>
             </div>
@@ -445,14 +501,14 @@ export function LiveWatchModal({
           {/* Shift Switcher & Quick Day Switcher & Section Selector */}
           <div className="flex flex-wrap items-center gap-2">
             {/* Shift Selector */}
-            <div className="flex items-center gap-1 bg-zinc-100 p-0.5 rounded-lg border border-zinc-200">
+            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
               <button
                 onClick={() => setSelectedShift("morning")}
                 className={cn(
                   "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer",
                   selectedShift === "morning"
-                    ? "bg-zinc-900 text-white shadow-xs"
-                    : "text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900"
                 )}
                 title="Morning Shift (06:30 AM - 10:30 AM)"
               >
@@ -464,8 +520,8 @@ export function LiveWatchModal({
                 className={cn(
                   "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer",
                   selectedShift === "day"
-                    ? "bg-zinc-900 text-white shadow-xs"
-                    : "text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900"
                 )}
                 title="Day Shift (10:45 AM - 03:45 PM)"
               >
@@ -477,8 +533,8 @@ export function LiveWatchModal({
                 className={cn(
                   "flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer",
                   selectedShift === "evening"
-                    ? "bg-zinc-900 text-white shadow-xs"
-                    : "text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900"
                 )}
                 title="Evening Shift (04:00 PM - 08:00 PM)"
               >
@@ -490,8 +546,8 @@ export function LiveWatchModal({
                 className={cn(
                   "px-1.5 py-0.5 text-[9px] font-semibold rounded-md transition-all cursor-pointer",
                   selectedShift === "auto"
-                    ? "bg-zinc-700 text-white"
-                    : "text-zinc-500 hover:bg-zinc-200"
+                    ? "bg-emerald-700 text-white"
+                    : "text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 )}
                 title="Auto-detect from Routine Schedule"
               >
@@ -500,7 +556,7 @@ export function LiveWatchModal({
             </div>
 
             {/* Quick Day Selector Buttons */}
-            <div className="flex items-center gap-1 bg-zinc-100 p-0.5 rounded-lg border border-zinc-200">
+            <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
               {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((d) => {
                 const isSelected = currentDayName.toLowerCase() === d.toLowerCase();
                 return (
@@ -510,8 +566,8 @@ export function LiveWatchModal({
                     className={cn(
                       "px-2 py-0.5 text-[10px] font-bold rounded-md transition-all cursor-pointer",
                       isSelected 
-                        ? "bg-zinc-900 text-white shadow-xs" 
-                        : "text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+                        ? "bg-emerald-600 text-white shadow-xs font-bold" 
+                        : "text-zinc-600 dark:text-zinc-300 hover:bg-emerald-50 dark:hover:bg-zinc-700 hover:text-emerald-700"
                     )}
                   >
                     {d.slice(0, 3)}
@@ -524,7 +580,7 @@ export function LiveWatchModal({
             <select
               value={selectedSectionId}
               onChange={(e) => setSelectedSectionId(e.target.value)}
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-bold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-500 cursor-pointer shadow-xs"
+              className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-xs"
             >
               {availableSections.length > 0 ? (
                 availableSections.map((s: any) => (
@@ -562,17 +618,17 @@ export function LiveWatchModal({
             teacherDirectory={timetable?.teacher_directory}
             legend={timetable?.legend}
             activeDayName={currentDayName}
-            activePeriodId={currentActivePeriod?.id || currentActivePeriod?.name || (ongoingClass ? ongoingClass.period_name : null)}
+            activePeriodId={currentActivePeriod?.id || currentActivePeriod?.name || (ongoingClass ? (ongoingClass.period_id || ongoingClass.period_name || ongoingClass.start_time) : null) || currentActivePeriod?.start_time}
           />
         </div>
 
         {/* Bottom Bar */}
-        <div className="bg-zinc-100 border-t border-zinc-200 px-5 py-2.5 flex items-center justify-between text-xs text-zinc-600">
+        <div className="bg-zinc-100 border-t border-zinc-200 px-5 py-2.5 flex items-center justify-between text-xs text-zinc-600 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
-            <span className="font-semibold text-zinc-800">Live Auto-Sync Active</span>
+            <span className="h-2 w-2 rounded-full bg-zinc-900 dark:bg-zinc-100 inline-block" />
+            <span className="font-semibold text-zinc-800 dark:text-zinc-200">Live Auto-Sync Active</span>
           </div>
-          <span className="text-[11px] text-zinc-500">
+          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
             Press ESC or click close to return
           </span>
         </div>

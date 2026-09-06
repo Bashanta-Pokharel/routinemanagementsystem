@@ -89,7 +89,7 @@ export default function TimetablesPage() {
       if (res.is_valid) {
         alert("✓ Timetable Audit Complete: 0 Conflicts Found across all hard constraints!");
       } else {
-        alert(`⚠ Audit Notice: ${res.total_conflicts} conflicts detected.`);
+        alert(`Audit Notice: ${res.total_conflicts} conflicts detected.`);
       }
       loadTimetableDetails(selectedTimetableId);
     } catch (e: any) {
@@ -104,7 +104,7 @@ export default function TimetablesPage() {
         <div className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="flex h-2.5 w-2.5 rounded-full bg-zinc-900 dark:bg-zinc-100" />
               <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
                 Master Timetable &amp; Routine Editor
               </h1>
@@ -132,9 +132,9 @@ export default function TimetablesPage() {
 
             <button
               onClick={() => setIsLiveWatchOpen(true)}
-              className="flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-zinc-100 px-3.5 py-2 text-xs font-bold text-zinc-900 hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
             >
-              <Eye className="h-4 w-4 text-emerald-600" />
+              <Eye className="h-4 w-4" />
               Live Watch
             </button>
 
@@ -167,7 +167,7 @@ export default function TimetablesPage() {
             </div>
             <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
               <span className="text-[10px] font-bold uppercase text-zinc-400">Conflict Count</span>
-              <div className="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="mt-1 text-xl font-bold text-zinc-900 dark:text-white">
                 {activeTimetable.conflict_count || 0}
               </div>
             </div>

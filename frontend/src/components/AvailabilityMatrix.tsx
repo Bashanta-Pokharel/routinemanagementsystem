@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Check, X, Star, Slash, Save, Sparkles, Copy, Sun } from "lucide-react";
+import { Check, X, Star, Slash, Save, Sun } from "lucide-react";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ interface AvailabilityMatrixProps {
 
 export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: AvailabilityMatrixProps) {
   const [days, setDays] = useState<any[]>([]);
-  const [availabilities, setAvailabilities] = useState<Record<number, string>>({}); // period_id -> status
+  const [availabilities, setAvailabilities] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -112,42 +112,42 @@ export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: Availabi
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-xs text-slate-500">Loading availability matrix...</div>;
+    return <div className="p-8 text-center text-xs text-zinc-500">Loading availability matrix...</div>;
   }
 
   const maxPeriods = Math.max(...days.map((d: any) => d.periods?.length || 6), 6);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       {/* Top Header & Bulk Controls */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 md:flex-row md:items-center md:justify-between">
         <div>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
             Weekly Availability Grid &ndash; {teacherName}
           </h3>
-          <p className="text-[11px] text-slate-500">
-            Click cells to cycle: Available (✓) → Preferred (★) → Unavailable (✗) → Restricted (⊘)
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            Click cells to cycle: Available (✓) &rarr; Preferred (★) &rarr; Unavailable (✗) &rarr; Restricted (⊘)
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={setMorningPreferred}
-            className="flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100 dark:border-amber-800/40 dark:bg-amber-950/40 dark:text-amber-300 cursor-pointer"
+            className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer transition-colors"
           >
             <Sun className="h-3.5 w-3.5" />
             Prefer Mornings
           </button>
           <button
             onClick={setAllAvailable}
-            className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+            className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer transition-colors"
           >
             Reset All Available
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm shadow-blue-500/25 hover:bg-blue-700 active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 px-4 py-2 text-xs font-bold text-white shadow-xs active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
           >
             <Save className="h-3.5 w-3.5" />
             {saving ? "Saving..." : saveSuccess ? "Saved ✓" : "Save Matrix"}
@@ -156,33 +156,33 @@ export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: Availabi
       </div>
 
       {/* Availability Matrix Grid */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-slate-800 dark:bg-slate-900">
+      <div className="rounded-2xl border border-zinc-200 bg-white shadow-xs overflow-hidden dark:border-zinc-800 dark:bg-zinc-900">
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-center text-xs min-w-[700px]">
             <thead>
-              <tr className="bg-slate-100/80 border-b border-slate-200 dark:bg-slate-800/60 dark:border-slate-800">
-                <th className="py-3 px-4 text-left font-bold text-slate-700 dark:text-slate-300 w-32 border-r border-slate-200 dark:border-slate-800 uppercase tracking-wider text-[11px]">
+              <tr className="bg-zinc-50 border-b border-zinc-200 dark:bg-zinc-800/80 dark:border-zinc-800">
+                <th className="py-3.5 px-4 text-left font-bold text-zinc-700 dark:text-zinc-300 w-32 border-r border-zinc-200 dark:border-zinc-800 uppercase tracking-wider text-[11px]">
                   Working Day
                 </th>
                 {Array.from({ length: maxPeriods }).map((_, idx) => (
                   <th
                     key={idx}
-                    className="py-3 px-3 font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-800 last:border-r-0 text-[11px]"
+                    className="py-3.5 px-3 font-bold text-zinc-700 dark:text-zinc-300 border-r border-zinc-200 dark:border-zinc-800 last:border-r-0 text-[11px]"
                   >
                     Period {idx + 1}
                   </th>
                 ))}
-                <th className="py-3 px-3 font-bold text-slate-700 dark:text-slate-300 w-28 text-[11px]">
+                <th className="py-3.5 px-3 font-bold text-zinc-700 dark:text-zinc-300 w-28 text-[11px]">
                   Quick Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {days.map((day: any) => {
                 const dayPeriods = day.periods || [];
                 return (
-                  <tr key={day.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3 px-4 text-left font-bold text-slate-900 dark:text-white bg-slate-50/70 dark:bg-slate-800/40 border-r border-slate-200 dark:border-slate-800">
+                  <tr key={day.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                    <td className="py-3.5 px-4 text-left font-bold text-zinc-900 dark:text-white bg-zinc-50/70 dark:bg-zinc-800/40 border-r border-zinc-200 dark:border-zinc-800">
                       {day.name}
                     </td>
 
@@ -193,7 +193,7 @@ export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: Availabi
                         return (
                           <td
                             key={pIdx}
-                            className="p-2 bg-slate-100/30 text-slate-400 dark:bg-slate-900/40 border-r border-slate-200 dark:border-slate-800 last:border-r-0"
+                            className="p-2 bg-zinc-100/30 text-zinc-400 dark:bg-zinc-900/40 border-r border-zinc-200 dark:border-zinc-800 last:border-r-0"
                           >
                             <span className="text-[10px]">Off</span>
                           </td>
@@ -204,7 +204,7 @@ export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: Availabi
                         return (
                           <td
                             key={period.id}
-                            className="p-2 bg-amber-50/50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-400 border-r border-slate-200 dark:border-slate-800 last:border-r-0 text-[10px] font-semibold"
+                            className="p-2 bg-zinc-100/60 text-zinc-600 dark:bg-zinc-800/40 dark:text-zinc-400 border-r border-zinc-200 dark:border-zinc-800 last:border-r-0 text-[10px] font-semibold"
                           >
                             {period.name}
                           </td>
@@ -217,24 +217,24 @@ export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: Availabi
                         <td
                           key={period.id}
                           onClick={() => toggleStatus(period.id)}
-                          className="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 cursor-pointer hover:opacity-90 select-none transition-all"
+                          className="p-2 border-r border-zinc-200 dark:border-zinc-800 last:border-r-0 cursor-pointer hover:scale-[1.02] select-none transition-all"
                         >
                           <div
                             className={cn(
-                              "flex flex-col items-center justify-center rounded-xl p-2 font-bold transition-all shadow-xs",
-                              status === "available" && "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/50",
-                              status === "preferred" && "bg-amber-50 text-amber-700 border border-amber-300 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-700 ring-1 ring-amber-400/40",
-                              status === "unavailable" && "bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/50",
-                              status === "restricted" && "bg-slate-100 text-slate-600 border border-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
+                              "flex flex-col items-center justify-center rounded-xl p-2 font-bold transition-all shadow-xs border",
+                              status === "available" && "bg-emerald-50 text-emerald-900 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-700/80",
+                              status === "preferred" && "bg-teal-50 text-teal-900 border-teal-300 dark:bg-teal-950/70 dark:text-teal-200 dark:border-teal-700 ring-1 ring-teal-400",
+                              status === "unavailable" && "bg-zinc-100 text-zinc-400 dark:bg-zinc-900/80 dark:text-zinc-500 border-zinc-200 dark:border-zinc-800 line-through opacity-70",
+                              status === "restricted" && "bg-amber-50 text-amber-900 dark:bg-amber-950/50 dark:text-amber-300 border-dashed border-amber-300 dark:border-amber-700"
                             )}
                           >
                             <div className="flex items-center gap-1 text-sm font-black">
-                              {status === "available" && <Check className="h-4 w-4 text-emerald-600" />}
-                              {status === "preferred" && <Star className="h-4 w-4 text-amber-500 fill-amber-400" />}
-                              {status === "unavailable" && <X className="h-4 w-4 text-rose-600" />}
-                              {status === "restricted" && <Slash className="h-4 w-4 text-slate-500" />}
+                              {status === "available" && <Check className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />}
+                              {status === "preferred" && <Star className="h-4 w-4 fill-teal-600 text-teal-600 dark:text-teal-300 dark:fill-teal-300" />}
+                              {status === "unavailable" && <X className="h-4 w-4 text-zinc-400" />}
+                              {status === "restricted" && <Slash className="h-4 w-4 text-amber-600 dark:text-amber-400" />}
                             </div>
-                            <span className="mt-0.5 text-[9px] uppercase tracking-wider font-semibold capitalize">
+                            <span className="mt-0.5 text-[9px] uppercase tracking-wider font-bold capitalize">
                               {status}
                             </span>
                           </div>
@@ -248,7 +248,7 @@ export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: Availabi
                         <button
                           type="button"
                           onClick={() => setEntireDayStatus(day, "available")}
-                          className="rounded px-1.5 py-1 text-[10px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 cursor-pointer"
+                          className="rounded-lg px-2 py-1 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900/80 cursor-pointer"
                           title="Set entire day Available"
                         >
                           All ✓
@@ -256,7 +256,7 @@ export function AvailabilityMatrix({ teacherId, teacherName, onSaved }: Availabi
                         <button
                           type="button"
                           onClick={() => setEntireDayStatus(day, "unavailable")}
-                          className="rounded px-1.5 py-1 text-[10px] font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 cursor-pointer"
+                          className="rounded-lg px-2 py-1 text-[10px] font-bold bg-zinc-100 text-zinc-600 border border-zinc-200 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700 dark:hover:bg-zinc-700 cursor-pointer"
                           title="Set entire day Off"
                         >
                           Off ✗

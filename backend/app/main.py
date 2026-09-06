@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from sqlalchemy import text
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
@@ -55,6 +56,26 @@ app.include_router(dashboard_router, prefix=settings.API_V1_STR)
 app.include_router(rules_router, prefix=settings.API_V1_STR)
 app.include_router(system_router, prefix=settings.API_V1_STR)
 app.include_router(seed_router, prefix=settings.API_V1_STR)
+
+@app.get("/health")
+@app.get(f"{settings.API_V1_STR}/health")
+def health_check():
+    db = SessionLocal()
+    try:
+        db.execute(text("SELECT 1"))
+        return {
+            "status": "online",
+            "database": "connected",
+            "db_type": "mysql_xampp"
+        }
+    except Exception as e:
+        return {
+            "status": "degraded",
+            "database": "disconnected",
+            "error": str(e)
+        }
+    finally:
+        db.close()
 
 @app.get("/")
 def root():
