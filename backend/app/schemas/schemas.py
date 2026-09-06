@@ -182,6 +182,7 @@ class WorkingDayCreate(WorkingDayBase):
 class WorkingDayResponse(WorkingDayBase):
     id: int
     periods_count: Optional[int] = 0
+    periods: Optional[List['PeriodResponse']] = []
     class Config:
         from_attributes = True
 
@@ -290,11 +291,16 @@ class TimetableEntryResponse(TimetableEntryBase):
     timetable_id: int
     section_name: Optional[str] = None
     program_name: Optional[str] = None
+    semester_name: Optional[str] = None
+    semester_number: Optional[int] = None
     subject_name: Optional[str] = None
     subject_code: Optional[str] = None
     subject_color: Optional[str] = None
+    course_type: Optional[str] = "TH"
     teacher_name: Optional[str] = None
     teacher_designation: Optional[str] = None
+    teacher_abbreviation: Optional[str] = None
+    teacher_contact: Optional[str] = None
     room_number: Optional[str] = None
     room_type_name: Optional[str] = None
     day_id: Optional[int] = None
@@ -304,6 +310,7 @@ class TimetableEntryResponse(TimetableEntryBase):
     start_time: Optional[str] = None
     end_time: Optional[str] = None
     period_type: Optional[str] = None
+    order_index: Optional[int] = None
     class Config:
         from_attributes = True
 
@@ -319,6 +326,9 @@ class TimetableResponse(BaseModel):
     conflict_count: int
     created_at: datetime
     updated_at: datetime
+    campus_name: Optional[str] = None
+    address: Optional[str] = None
+    periods: Optional[List[Dict[str, Any]]] = []
     entries: List[TimetableEntryResponse] = []
     class Config:
         from_attributes = True

@@ -181,11 +181,51 @@ export function CampusRoutineSheet({
                       );
                     }
 
-                    // Find matching class
+                    // Calculate teaching-only column index (1-indexed, skipping breaks)
+                    let teachingIndex = 0;
+                    for (let i = 0; i <= pIdx; i++) {
+                      const cur = periods[i];
+                      const isBrk = cur.period_type === "Break" || cur.name?.toLowerCase().includes("interval") || cur.name?.toLowerCase().includes("break");
+                      if (!isBrk) teachingIndex++;
+                    }
+
+                    // Find matching class with multi-strategy matching
+                    const dayName = (day.name || day.short_code || "").toString().trim().toLowerCase();
+                    const dayId = day.id;
+
                     const match = entries.find((e: any) => {
-                      const matchDay = (e.day_name === day.name) || (e.day_id === day.id);
-                      const matchPeriod = (e.period_id === period.id) || (e.period_name === period.name);
-                      return matchDay && matchPeriod;
+                      const eDayName = (e.day_name || e.day_short_code || "").toString().trim().toLowerCase();
+                      const matchDay = 
+                        (eDayName && dayName && (eDayName === dayName || eDayName.includes(dayName) || dayName.includes(eDayName))) ||
+                        (dayId && e.day_id && dayId === e.day_id);
+                      
+                      if (!matchDay) return false;
+
+                      // 1. Match by period id if present
+                      if (period.id && e.period_id && period.id === e.period_id) return true;
+
+                      // 2. Match by exact or normalized start/end time
+                      const cleanPStart = (period.start_time || "").replace(/\s+/g, "").toLowerCase();
+                      const cleanEStart = (e.start_time || "").replace(/\s+/g, "").toLowerCase();
+                      if (cleanPStart && cleanEStart && cleanPStart === cleanEStart) return true;
+
+                      // 3. Match by extracted period number (e.g. "Period 1" matches "Period 1")
+                      const pNumMatch = (period.name || "").match(/\d+/);
+                      const eNumMatch = (e.period_name || "").match(/\d+/);
+                      if (pNumMatch && eNumMatch && pNumMatch[0] === eNumMatch[0]) return true;
+
+                      // 4. Match by period name
+                      const cleanPName = (period.name || "").trim().toLowerCase();
+                      const cleanEName = (e.period_name || "").trim().toLowerCase();
+                      if (cleanPName && cleanEName && (cleanPName === cleanEName || cleanPName.includes(cleanEName) || cleanEName.includes(cleanPName))) return true;
+
+                      // 5. Match by order index
+                      if (period.order_index != null && e.order_index != null && Number(period.order_index) === Number(e.order_index)) return true;
+
+                      // 6. Match by teaching period index (1st teaching slot, 2nd teaching slot, etc.)
+                      if (e.order_index != null && Number(e.order_index) === teachingIndex) return true;
+
+                      return false;
                     });
 
                     if (!match) {
@@ -203,7 +243,7 @@ export function CampusRoutineSheet({
                     }
 
                     const subName = match.subject_name || match.subject_code || "Class";
-                    const cType = match.course_type || (match.room_type_name?.includes("Lab") ? "PR" : "TH");
+                    const cType = match.course_type || (match.room_type_name?.includes("Lab") || (match.room_number && match.room_number.toLowerCase().includes("lab")) ? "PR" : "TH");
                     const tAbbrev =
                       match.teacher_abbreviation ||
                       (match.teacher_name
@@ -231,6 +271,11 @@ export function CampusRoutineSheet({
                           </div>
                           <div className="text-[10px] font-semibold text-zinc-700 mt-0.5">
                             [{cType}] [{tAbbrev}]
+                            {cType === "PR" && (
+                              <span className="block text-[9px] font-medium text-zinc-500 mt-0.5">
+                                [Comp Lab]
+                              </span>
+                            )}
                           </div>
                           {isCurrentLiveSlot && (
                             <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-emerald-600 text-[8px] font-black text-white uppercase tracking-wider animate-pulse">

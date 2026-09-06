@@ -11,7 +11,7 @@ from reportlab.lib import colors
 
 from app.core.database import get_db
 from app.models.all_models import (
-    Timetable, TimetableEntry, GenerationRun, GenerationSolution, Subject, Teacher, Room, Section, Period, WorkingDay, AuditLog, Notification
+    Timetable, TimetableEntry, GenerationRun, GenerationSolution, Subject, Teacher, Room, Section, Period, WorkingDay, AuditLog, Notification, Campus
 )
 from app.schemas.schemas import (
     TimetableResponse, TimetableEntryResponse, GenerateTimetableRequest,
@@ -22,6 +22,7 @@ from app.scheduler.generator import generate_routine
 from app.scheduler.validator import TimetableValidator
 from app.scheduler.explainer import ScheduleExplainer
 from app.scheduler.models import ScheduledLesson
+from app.scheduler.bca_multi_semester import get_teacher_abbreviation
 
 router = APIRouter(prefix="/timetable", tags=["Timetable & Scheduling"])
 
@@ -44,24 +45,68 @@ def get_timetable(id: int, db: Session = Depends(get_db)):
     resp = TimetableResponse.from_orm(tt)
     resp.academic_year_name = tt.academic_year.name if tt.academic_year else None
     
+    campus_entity = db.query(Campus).first()
+    resp.campus_name = campus_entity.name if campus_entity else "Ratna Rajyalaxmi Campus"
+    resp.address = campus_entity.address if campus_entity else "Pradarshanimarga, Kathmandu Nepal"
+
+    # Distinct periods for this specific routine
+    tt_period_ids = {e.period_id for e in tt.entries if e.period_id}
+    tt_periods = db.query(Period).filter(Period.id.in_(tt_period_ids)).all() if tt_period_ids else []
+    
+    tt_day_ids = {p.day_id for p in tt_periods if p.day_id}
+    break_periods = db.query(Period).filter(Period.day_id.in_(tt_day_ids), Period.period_type != "Teaching").all() if tt_day_ids else []
+    
+    candidate_periods = tt_periods + break_periods
+    if not candidate_periods:
+        candidate_periods = db.query(Period).order_by(Period.day_id, Period.order_index).all()
+
+    distinct_periods = []
+    seen_period_keys = set()
+    for p in sorted(candidate_periods, key=lambda x: x.order_index):
+        key = (p.name, p.start_time, p.end_time)
+        if key not in seen_period_keys:
+            seen_period_keys.add(key)
+            distinct_periods.append({
+                "id": p.id,
+                "name": p.name,
+                "start_time": p.start_time,
+                "end_time": p.end_time,
+                "order_index": p.order_index,
+                "period_type": p.period_type
+            })
+    resp.periods = distinct_periods
+
     entries_res = []
     for e in tt.entries:
         entry_resp = TimetableEntryResponse.from_orm(e)
         entry_resp.section_name = e.section.name if e.section else None
         entry_resp.program_name = e.section.semester.program.name if (e.section and e.section.semester and e.section.semester.program) else None
+        entry_resp.semester_name = e.section.semester.name if (e.section and e.section.semester) else None
+        entry_resp.semester_number = e.section.semester.semester_number if (e.section and e.section.semester) else None
         entry_resp.subject_name = e.subject.name if e.subject else None
         entry_resp.subject_code = e.subject.code if e.subject else None
         entry_resp.subject_color = e.subject.color_code if e.subject else "#3B82F6"
         entry_resp.teacher_name = e.teacher.name if e.teacher else None
         entry_resp.teacher_designation = e.teacher.designation if e.teacher else None
+        entry_resp.teacher_contact = e.teacher.phone if e.teacher else None
+        entry_resp.teacher_abbreviation = get_teacher_abbreviation(e.teacher.name) if e.teacher else "TCH"
         entry_resp.room_number = e.room.room_number if e.room else None
         entry_resp.room_type_name = e.room.room_type.name if (e.room and e.room.room_type) else None
         
+        # Course type
+        sub_n = (e.subject.name or "").lower() if e.subject else ""
+        rm_n = (e.room.room_number or "").lower() if e.room else ""
+        if "lab" in sub_n or "practical" in sub_n or "lab" in rm_n:
+            entry_resp.course_type = "PR"
+        else:
+            entry_resp.course_type = "TH"
+
         if e.period:
             entry_resp.period_name = e.period.name
             entry_resp.start_time = e.period.start_time
             entry_resp.end_time = e.period.end_time
             entry_resp.period_type = e.period.period_type
+            entry_resp.order_index = e.period.order_index
             if e.period.day:
                 entry_resp.day_id = e.period.day.id
                 entry_resp.day_name = e.period.day.name
@@ -163,6 +208,8 @@ class BCASemesterInput(BaseModel):
 
 class BCAMultiSemesterRequest(BaseModel):
     routine_title: Optional[str] = None
+    campus_name: Optional[str] = None
+    address: Optional[str] = None
     days: List[str] = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     periods: List[SimplePeriodInput]
     day_period_counts: Optional[Dict[str, int]] = None
@@ -198,7 +245,9 @@ def generate_bca_routine_api(req: BCAMultiSemesterRequest, db: Session = Depends
             days_list=req.days,
             periods_list=periods_dict,
             day_period_counts=req.day_period_counts,
-            routine_title=req.routine_title
+            routine_title=req.routine_title,
+            campus_name=req.campus_name,
+            address=req.address
         )
         return result
     except Exception as e:

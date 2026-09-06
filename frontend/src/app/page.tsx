@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Users, Layers, BookOpen, DoorOpen, Clock, CalendarCheck, 
-  Sparkles, CheckCircle2, AlertTriangle, ArrowUpRight, BarChart3, TrendingUp, ShieldCheck
+  Sparkles, CheckCircle2, AlertTriangle, ArrowUpRight, BarChart3, TrendingUp, ShieldCheck, Eye
 } from "lucide-react";
 import { 
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, 
@@ -41,42 +41,36 @@ export default function DashboardPage() {
       title: "Faculty Members",
       value: stats?.teachers_count || 10,
       icon: Users,
-      color: "from-blue-600 to-indigo-600",
       link: "/teachers"
     },
     {
       title: "Active Sections",
       value: stats?.sections_count || 6,
       icon: Layers,
-      color: "from-indigo-600 to-violet-600",
       link: "/academic"
     },
     {
       title: "Subjects / Courses",
       value: stats?.subjects_count || 25,
       icon: BookOpen,
-      color: "from-violet-600 to-purple-600",
       link: "/subjects"
     },
     {
       title: "Rooms & Labs",
       value: stats?.rooms_count || 8,
       icon: DoorOpen,
-      color: "from-emerald-600 to-teal-600",
       link: "/rooms"
     },
     {
       title: "Active Periods",
       value: stats?.periods_count || 34,
       icon: Clock,
-      color: "from-amber-600 to-orange-600",
       link: "/periods"
     },
     {
       title: "Optimization Score",
-      value: stats?.latest_routine_score ? `${stats.latest_routine_score}%` : "94.2%",
+      value: stats?.latest_routine_score ? `${stats.latest_routine_score}%` : "100%",
       icon: Sparkles,
-      color: "from-cyan-600 to-blue-600",
       badge: "0 Conflicts",
       link: "/timetables"
     },
@@ -84,27 +78,34 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Welcome Header */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
                   College Routine Management System
                 </h1>
-                <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800 dark:text-emerald-300">
-                  MySQL XAMPP
+                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
+                  Ready &amp; Active
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Dynamic routine scheduling with teacher availability windows, room allocation, and clash-free generation.
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+                Schedule multiple semesters clash-free, watch routines live with auto-tracking, and export campus-ready printable sheets.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <Link
+                href="/live-watch"
+                className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 transition-colors"
+              >
+                <Eye className="h-3.5 w-3.5 text-emerald-600" />
+                Live Watch
+              </Link>
+              <Link
                 href="/timetables"
-                className="rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
+                className="rounded-lg bg-zinc-900 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
               >
                 Master Routine
               </Link>
@@ -113,147 +114,131 @@ export default function DashboardPage() {
         </div>
 
         {/* Mode Selector Tabs */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 dark:border-slate-800">
+        <div className="flex items-center gap-2 border-b border-zinc-200 pb-2 dark:border-zinc-800">
           <button
             onClick={() => setActiveTab("simple")}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
               activeTab === "simple"
-                ? "bg-blue-600 text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
             }`}
           >
-            <Sparkles className="h-4 w-4" />
-            Simple Routine Builder
+            <Sparkles className="h-3.5 w-3.5" />
+            BCA Routine Builder
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
               activeTab === "analytics"
-                ? "bg-blue-600 text-white"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
             }`}
           >
-            <BarChart3 className="h-4 w-4" />
-            Campus Overview & Analytics
+            <BarChart3 className="h-3.5 w-3.5" />
+            Campus Analytics &amp; Faculty Load
           </button>
         </div>
 
         {activeTab === "simple" ? (
           <SimpleRoutineWizard />
         ) : (
-          <>
+          <div className="space-y-6">
             {/* KPI Cards Grid */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {kpis.map((kpi, idx) => (
                 <Link
                   key={idx}
                   href={kpi.link}
-                  className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs hover:border-blue-400 transition-all dark:border-slate-800 dark:bg-slate-900"
+                  className="rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs hover:border-zinc-400 transition-all dark:border-zinc-800 dark:bg-zinc-900"
                 >
-              <div className="flex items-center justify-between">
-                <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr ${kpi.color} text-white shadow-sm`}>
-                  <kpi.icon className="h-4 w-4" />
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
-              </div>
-              <div className="mt-3">
-                <div className="text-xl font-black text-slate-900 dark:text-white">
-                  {kpi.value}
-                </div>
-                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
-                  {kpi.title}
-                </div>
-                {kpi.badge && (
-                  <span className="mt-1 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                    {kpi.badge}
-                  </span>
-                )}
-              </div>
-            </Link>
-          ))}
-        </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+                      <kpi.icon className="h-4 w-4" />
+                    </div>
+                    <ArrowUpRight className="h-3.5 w-3.5 text-zinc-400" />
+                  </div>
+                  <div className="mt-2.5">
+                    <div className="text-xl font-bold text-zinc-900 dark:text-white">
+                      {kpi.value}
+                    </div>
+                    <div className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      {kpi.title}
+                    </div>
+                    {kpi.badge && (
+                      <span className="mt-1 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        {kpi.badge}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
 
-        {/* Analytics Charts */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Room Utilization Chart */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <DoorOpen className="h-4 w-4 text-blue-600" />
-                  Room & Lab Utilization
-                </h3>
-                <p className="text-xs text-slate-500">Booked periods percentage per room</p>
+            {/* Analytics Charts */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* Room Utilization Chart */}
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <DoorOpen className="h-4 w-4 text-zinc-600" />
+                    <h3 className="text-xs font-bold text-zinc-900 dark:text-white">
+                      Room &amp; Lab Utilization Rate (%)
+                    </h3>
+                  </div>
+                </div>
+                <div className="h-64 pt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stats?.room_utilization || [
+                      { room: "Room 101", rate: 85 },
+                      { room: "Room 102", rate: 70 },
+                      { room: "Room 103", rate: 90 },
+                      { room: "Room 104", rate: 65 },
+                      { room: "Lab 1", rate: 95 },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
+                      <XAxis dataKey="room" tick={{ fontSize: 10 }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Bar dataKey="rate" fill="#18181b" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Weekly Period Distribution */}
+              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <CalendarCheck className="h-4 w-4 text-zinc-600" />
+                    <h3 className="text-xs font-bold text-zinc-900 dark:text-white">
+                      Daily Class Density (Sun &ndash; Fri)
+                    </h3>
+                  </div>
+                </div>
+                <div className="h-64 pt-4">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={stats?.day_distribution || [
+                      { day: "Sun", classes: 18 },
+                      { day: "Mon", classes: 20 },
+                      { day: "Tue", classes: 22 },
+                      { day: "Wed", classes: 19 },
+                      { day: "Thu", classes: 21 },
+                      { day: "Fri", classes: 15 },
+                    ]}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" />
+                      <XAxis dataKey="day" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="classes" stroke="#27272a" fill="#e4e4e7" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
-            <div className="mt-4 h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats?.room_utilizations || [
-                  { room_number: "Room 101", utilization_pct: 75 },
-                  { room_number: "Room 102", utilization_pct: 68 },
-                  { room_number: "Lab 1", utilization_pct: 82 },
-                  { room_number: "Lab 2", utilization_pct: 60 },
-                  { room_number: "HW Lab", utilization_pct: 45 },
-                  { room_number: "Room 201", utilization_pct: 70 },
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="room_number" tick={{ fontSize: 10 }} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10 }} tickLine={false} unit="%" />
-                  <Tooltip />
-                  <Bar dataKey="utilization_pct" fill="#3B82F6" radius={[6, 6, 0, 0]} name="Utilization" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+
+            {/* Workload Tracker */}
+            <WorkloadTracker />
           </div>
-
-          {/* Day-wise Distribution Chart */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-600" />
-                  Daily Scheduled Load
-                </h3>
-                <p className="text-xs text-slate-500">Class density across active working days</p>
-              </div>
-            </div>
-            <div className="mt-4 h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={stats?.day_distribution || [
-                  { short_code: "SUN", classes_count: 22 },
-                  { short_code: "MON", classes_count: 24 },
-                  { short_code: "TUE", classes_count: 21 },
-                  { short_code: "WED", classes_count: 20 },
-                  { short_code: "THU", classes_count: 23 },
-                  { short_code: "FRI", classes_count: 14 },
-                ]}>
-                  <defs>
-                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="short_code" tick={{ fontSize: 10 }} tickLine={false} />
-                  <YAxis tick={{ fontSize: 10 }} tickLine={false} />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="classes_count" stroke="#10B981" fillOpacity={1} fill="url(#colorCount)" name="Classes" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
-        {/* Teacher Workload Table */}
-        <WorkloadTracker workloads={stats?.teacher_workloads || [
-          { teacher_id: 1, name: "Dr. Ram Sharma", assigned_hours: 18, max_hours: 22, utilization_pct: 81.8, status: "Balanced" },
-          { teacher_id: 2, name: "Prof. Sita Rai", assigned_hours: 19, max_hours: 22, utilization_pct: 86.3, status: "Near Limit" },
-          { teacher_id: 3, name: "Er. Hari Thapa", assigned_hours: 16, max_hours: 22, utilization_pct: 72.7, status: "Balanced" },
-          { teacher_id: 4, name: "Bikash KC", assigned_hours: 18, max_hours: 22, utilization_pct: 81.8, status: "Balanced" },
-          { teacher_id: 5, name: "Anita Shrestha", assigned_hours: 17, max_hours: 22, utilization_pct: 77.2, status: "Balanced" },
-          { teacher_id: 6, name: "Ramesh Joshi", assigned_hours: 15, max_hours: 22, utilization_pct: 68.1, status: "Balanced" },
-        ]} />
-          </>
         )}
       </div>
     </DashboardLayout>

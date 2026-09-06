@@ -107,6 +107,16 @@ export default function TeachersPage() {
     }
   };
 
+  const handleDeleteTeacher = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this teacher?")) return;
+    try {
+      await api.deleteTeacher(id);
+      loadData();
+    } catch (err: any) {
+      alert("Failed to delete teacher: " + err.message);
+    }
+  };
+
   const filteredTeachers = teachers.filter((t) =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.employee_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -226,6 +236,13 @@ export default function TeachersPage() {
                           title="Edit Teacher"
                         >
                           <Edit3 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTeacher(t.id)}
+                          className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 cursor-pointer"
+                          title="Delete Teacher"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </td>

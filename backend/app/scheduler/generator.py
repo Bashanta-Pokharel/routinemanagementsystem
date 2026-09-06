@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.models.all_models import (
-    Timetable, TimetableEntry, GenerationRun, GenerationSolution, AuditLog, Notification
+    Timetable, TimetableEntry, GenerationRun, GenerationSolution, AuditLog, Notification, AcademicYear
 )
 from app.schemas.schemas import GenerateTimetableRequest
 from app.scheduler.input_parser import parse_schedule_problem
@@ -53,10 +53,19 @@ def generate_routine(
     elapsed_time = round(time.time() - start_time, 2)
     best_solution = solutions[0]
 
+    # Ensure Academic Year exists to prevent FK violation
+    ay = db.query(AcademicYear).filter(AcademicYear.id == request.academic_year_id).first() if request.academic_year_id else None
+    if not ay:
+        ay = db.query(AcademicYear).first()
+        if not ay:
+            ay = AcademicYear(name="2026/2027 Academic Session", is_current=True)
+            db.add(ay)
+            db.flush()
+
     # 3. Create or update Timetable record
     new_timetable = Timetable(
         name=request.name or f"College Routine - {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}",
-        academic_year_id=request.academic_year_id,
+        academic_year_id=ay.id,
         description=f"Generated via CP-SAT Optimizer in {elapsed_time}s with score {best_solution.score}%.",
         version=1,
         is_published=False,

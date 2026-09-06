@@ -11,6 +11,7 @@ import { fetchApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { CampusRoutineSheet } from "@/components/CampusRoutineSheet";
 import { LiveWatchModal } from "@/components/LiveWatchModal";
+import { useCampusInfo } from "@/lib/campusSettings";
 import Link from "next/link";
 
 interface TeacherItem {
@@ -43,14 +44,12 @@ interface SemesterBlock {
 }
 
 export function SimpleRoutineWizard() {
+  // Global Campus Information (Reactive across all components & live watch)
+  const { campusInfo, updateCampusInfo } = useCampusInfo();
+
   // Database reset state
   const [resettingDb, setResettingDb] = useState(false);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
-
-  // Routine Meta
-  const [campusName, setCampusName] = useState("Ratna Rajyalaxmi Campus");
-  const [campusAddress, setCampusAddress] = useState("Pradarshanimarga, Kathmandu Nepal");
-  const [routineTitle, setRoutineTitle] = useState("BCA Academic Routine 2026");
 
   // Step 1: Faculty / Teachers with Specialty, Abbreviation, Contact and Free Time
   const [teachers, setTeachers] = useState<TeacherItem[]>([
@@ -69,7 +68,7 @@ export function SimpleRoutineWizard() {
       name: "Shree krishna Maharjan",
       abbreviation: "SKM",
       contact: "9841299009",
-      speciality: "Discrete Structure",
+      speciality: "Discrete Structure & Networks",
       free_time_start: "06:30 AM",
       free_time_end: "10:30 AM",
       max_classes_per_day: 4,
@@ -79,7 +78,7 @@ export function SimpleRoutineWizard() {
       name: "Ananda KC",
       abbreviation: "AK",
       contact: "9851223176",
-      speciality: "OOP in Java",
+      speciality: "OOP in Java & Software Eng",
       free_time_start: "06:30 AM",
       free_time_end: "10:30 AM",
       max_classes_per_day: 4,
@@ -89,7 +88,7 @@ export function SimpleRoutineWizard() {
       name: "Sharmila Bhattarai",
       abbreviation: "SB",
       contact: "9844638055",
-      speciality: "Statistics",
+      speciality: "Statistics & Numerical Methods",
       free_time_start: "06:30 AM",
       free_time_end: "10:30 AM",
       max_classes_per_day: 4,
@@ -99,14 +98,64 @@ export function SimpleRoutineWizard() {
       name: "Bijaya Mishra",
       abbreviation: "BM",
       contact: "9841695609",
-      speciality: "Web Technology",
+      speciality: "Web Technology & UI/UX",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
+      max_classes_per_day: 4,
+    },
+    {
+      id: "t6",
+      name: "Prakash Sharma",
+      abbreviation: "PRS",
+      contact: "9841334455",
+      speciality: "Python, AI & Machine Learning",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
+      max_classes_per_day: 4,
+    },
+    {
+      id: "t7",
+      name: "Dipendra Nepal",
+      abbreviation: "DN",
+      contact: "9841556677",
+      speciality: "DBMS, Dotnet & Cloud",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
+      max_classes_per_day: 4,
+    },
+    {
+      id: "t8",
+      name: "Ramesh Shrestha",
+      abbreviation: "RS",
+      contact: "9841778899",
+      speciality: "OS & Cyber Security",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
+      max_classes_per_day: 4,
+    },
+    {
+      id: "t9",
+      name: "Pujan Mahat",
+      abbreviation: "PM",
+      contact: "9841990011",
+      speciality: "Mathematics",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
+      max_classes_per_day: 4,
+    },
+    {
+      id: "t10",
+      name: "Sabita Thapa",
+      abbreviation: "ST",
+      contact: "9841223344",
+      speciality: "Communication, Economics & Ethics",
       free_time_start: "06:30 AM",
       free_time_end: "10:30 AM",
       max_classes_per_day: 4,
     },
   ]);
 
-  // Step 2 & 3: BCA Semesters (1 to 8) with Subjects
+  // Step 2 & 3: Official BCA Semesters (1 to 8) with all Syllabus Subjects
   const [semesters, setSemesters] = useState<SemesterBlock[]>([
     {
       semester_number: 1,
@@ -115,11 +164,13 @@ export function SimpleRoutineWizard() {
       room_name: "Room 101",
       is_active: true,
       subjects: [
-        { id: "s1_1", name: "C Programming", code: "CACS101", course_type: "TH", weekly_periods: 4, teacher_name: "Bhupendra Ram Luhar" },
-        { id: "s1_2", name: "Digital Logic Systems", code: "CACS102", course_type: "TH", weekly_periods: 4, teacher_name: "Shree krishna Maharjan" },
-        { id: "s1_3", name: "Mathematics I", code: "CACS103", course_type: "TH", weekly_periods: 4, teacher_name: "Sharmila Bhattarai" },
-        { id: "s1_4", name: "Computer Fundamentals", code: "CACS104", course_type: "TH", weekly_periods: 4, teacher_name: "Bijaya Mishra" },
-        { id: "s1_5", name: "C Programming Lab", code: "CACS105", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s1_1", name: "Computer Fundamentals and Applications", code: "BCA 101", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s1_2", name: "Programming in C", code: "BCA 102", course_type: "TH", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s1_3", name: "Digital Logic", code: "BCA 103", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s1_4", name: "Mathematics-I", code: "BCA 104", course_type: "TH", weekly_periods: 3, teacher_name: "Pujan Mahat" },
+        { id: "s1_5", name: "Professional Communication and Ethics", code: "BCA 105", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
+        { id: "s1_6", name: "Hardware Workshop", code: "BCA 106", course_type: "PR", weekly_periods: 2, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s1_7", name: "C Programming Lab", code: "BCA 102P", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
       ]
     },
     {
@@ -128,81 +179,153 @@ export function SimpleRoutineWizard() {
       section_name: "BCA 2nd Sem",
       room_name: "Room 102",
       is_active: false,
-      subjects: []
+      subjects: [
+        { id: "s2_1", name: "Discrete Structure", code: "BCA 151", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s2_2", name: "Microprocessor and Computer Architecture", code: "BCA 152", course_type: "TH", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s2_3", name: "OOP in Java", code: "BCA 153", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s2_4", name: "Mathematics-II", code: "BCA 154", course_type: "TH", weekly_periods: 3, teacher_name: "Pujan Mahat" },
+        { id: "s2_5", name: "UX/UI Design", code: "BCA 155", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s2_6", name: "Principles of Management", code: "BCA 156", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s2_7", name: "Java Programming Lab", code: "BCA 153P", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
+      ]
     },
     {
       semester_number: 3,
       semester_name: "BCA 3rd Semester",
       section_name: "BCA 3rd Sem",
-      room_name: "Room 103",
+      room_name: "Room 201",
       is_active: true,
       subjects: [
-        { id: "s3_1", name: "OOP in Java", code: "CACS201", course_type: "TH", weekly_periods: 4, teacher_name: "Ananda KC" },
-        { id: "s3_2", name: "Discrete Structure", code: "CACS202", course_type: "TH", weekly_periods: 4, teacher_name: "Shree krishna Maharjan" },
-        { id: "s3_3", name: "Data Structures & Algorithms", code: "CACS203", course_type: "TH", weekly_periods: 4, teacher_name: "Bhupendra Ram Luhar" },
-        { id: "s3_4", name: "Web Technology", code: "CACS204", course_type: "TH", weekly_periods: 4, teacher_name: "Bijaya Mishra" },
+        { id: "s3_1", name: "Data Structure and Algorithms", code: "BCA 201", course_type: "TH", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s3_2", name: "Database Management System", code: "BCA 202", course_type: "TH", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s3_3", name: "Web Technology-I", code: "BCA 203", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s3_4", name: "System Analysis and Design", code: "BCA 204", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s3_5", name: "Probability and Statistics", code: "BCA 205", course_type: "TH", weekly_periods: 3, teacher_name: "Sharmila Bhattarai" },
+        { id: "s3_6", name: "Applied Economics", code: "BCA 206", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s3_7", name: "DSA & DBMS Lab", code: "BCA 201P", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
       ]
     },
     {
       semester_number: 4,
       semester_name: "BCA 4th Semester",
       section_name: "BCA 4th Sem",
-      room_name: "Room 104",
+      room_name: "Room 202",
       is_active: false,
-      subjects: []
+      subjects: [
+        { id: "s4_1", name: "Operating Systems", code: "BCA 251", course_type: "TH", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+        { id: "s4_2", name: "Software Engineering", code: "BCA 252", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s4_3", name: "Numerical Methods", code: "BCA 253", course_type: "TH", weekly_periods: 3, teacher_name: "Sharmila Bhattarai" },
+        { id: "s4_4", name: "Python Programming", code: "BCA 254", course_type: "TH", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s4_5", name: "Web Technology-II", code: "BCA 255", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s4_6", name: "Project-I (Project Lab)", code: "BCA 256", course_type: "PR", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+      ]
     },
     {
       semester_number: 5,
       semester_name: "BCA 5th Semester",
       section_name: "BCA 5th Sem",
-      room_name: "Room 105",
+      room_name: "Room 301",
       is_active: true,
       subjects: [
-        { id: "s5_1", name: "Microprocessor & Comp Architecture", code: "CACS301", course_type: "TH", weekly_periods: 4, teacher_name: "Bhupendra Ram Luhar" },
-        { id: "s5_2", name: "Numerical Methods", code: "CACS302", course_type: "TH", weekly_periods: 4, teacher_name: "Sharmila Bhattarai" },
-        { id: "s5_3", name: "Software Engineering", code: "CACS303", course_type: "TH", weekly_periods: 4, teacher_name: "Ananda KC" },
-        { id: "s5_4", name: "Computer Networks", code: "CACS304", course_type: "TH", weekly_periods: 4, teacher_name: "Shree krishna Maharjan" },
+        { id: "s5_1", name: "Computer Network", code: "BCA 301", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s5_2", name: "Artificial Intelligence", code: "BCA 302", course_type: "TH", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s5_3", name: "Advance Java Programming", code: "BCA 303", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s5_4", name: "MIS and e-Business", code: "BCA 304", course_type: "TH", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s5_5", name: "Society and Technology", code: "BCA 305", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
+        { id: "s5_6", name: "Project-II (AI & Java Lab)", code: "BCA 306", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
       ]
     },
     {
       semester_number: 6,
       semester_name: "BCA 6th Semester",
       section_name: "BCA 6th Sem",
-      room_name: "Room 106",
+      room_name: "Room 302",
       is_active: false,
-      subjects: []
+      subjects: [
+        { id: "s6_1", name: "Computer Graphics and animation", code: "BCA 351", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s6_2", name: "Mobile Programming", code: "BCA 352", course_type: "TH", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s6_3", name: "Cryptography and Network Security", code: "BCA 353", course_type: "TH", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+        { id: "s6_4", name: "Technical Writing", code: "BCA 354", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s6_5", name: "Distributed System", code: "BCA 355", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s6_6", name: "Project-III (Mobile & Security Lab)", code: "BCA 356", course_type: "PR", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+      ]
     },
     {
       semester_number: 7,
       semester_name: "BCA 7th Semester",
       section_name: "BCA 7th Sem",
-      room_name: "Room 107",
+      room_name: "Room 401",
       is_active: false,
-      subjects: []
+      subjects: [
+        { id: "s7_1", name: "Cyber Security and Ethical Hacking", code: "BCA 401", course_type: "TH", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+        { id: "s7_2", name: "Software Project Management", code: "BCA 402", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
+        { id: "s7_3", name: "Financial Accounting", code: "BCA 403", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
+        { id: "s7_4", name: "Machine Learning (Elective-I)", code: "BCA 405", course_type: "TH", weekly_periods: 3, teacher_name: "Prakash Sharma" },
+        { id: "s7_5", name: "Dotnet Technology (Elective-II)", code: "BCA 406", course_type: "TH", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s7_6", name: "Project-IV (Cyber & ML Lab)", code: "BCA 404", course_type: "PR", weekly_periods: 3, teacher_name: "Ramesh Shrestha" },
+      ]
     },
     {
       semester_number: 8,
       semester_name: "BCA 8th Semester",
       section_name: "BCA 8th Sem",
-      room_name: "Room 108",
+      room_name: "Room 402",
       is_active: false,
-      subjects: []
+      subjects: [
+        { id: "s8_1", name: "Cloud Computing", code: "BCA 451", course_type: "TH", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+        { id: "s8_2", name: "Network Administration (Elective-III)", code: "BCA 453", course_type: "TH", weekly_periods: 3, teacher_name: "Shree krishna Maharjan" },
+        { id: "s8_3", name: "Digital Marketing and SEO (Elective-IV)", code: "BCA 454", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
+        { id: "s8_4", name: "Internship & Cloud Project", code: "BCA 452", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
+      ]
     }
   ]);
 
-  // Step 4: Days and Periods matching morning campus schedule
+  // Step 4: Days and Periods matching morning or day campus schedule
   const [selectedDays, setSelectedDays] = useState<string[]>([
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
   ]);
 
-  const [periods, setPeriods] = useState([
+  const [selectedShift, setSelectedShift] = useState<"morning" | "day" | "custom">("morning");
+
+  const morningPeriods = [
     { name: "Period 1", start_time: "06:30 AM", end_time: "07:15 AM", type: "Teaching" },
     { name: "Period 2", start_time: "07:15 AM", end_time: "08:00 AM", type: "Teaching" },
     { name: "Period 3", start_time: "08:00 AM", end_time: "08:45 AM", type: "Teaching" },
-    { name: "Break", start_time: "08:45 AM", end_time: "09:05 AM", type: "Break" },
+    { name: "Interval", start_time: "08:45 AM", end_time: "09:05 AM", type: "Break" },
     { name: "Period 4", start_time: "09:05 AM", end_time: "09:50 AM", type: "Teaching" },
     { name: "Period 5", start_time: "09:50 AM", end_time: "10:30 AM", type: "Teaching" },
-  ]);
+  ];
+
+  const dayPeriods = [
+    { name: "Period 1", start_time: "10:45 AM", end_time: "11:30 AM", type: "Teaching" },
+    { name: "Period 2", start_time: "11:30 AM", end_time: "12:15 PM", type: "Teaching" },
+    { name: "Period 3", start_time: "12:15 PM", end_time: "01:00 PM", type: "Teaching" },
+    { name: "Interval", start_time: "01:00 PM", end_time: "01:30 PM", type: "Break" },
+    { name: "Period 4", start_time: "01:30 PM", end_time: "02:15 PM", type: "Teaching" },
+    { name: "Period 5", start_time: "02:15 PM", end_time: "03:00 PM", type: "Teaching" },
+    { name: "Period 6", start_time: "03:00 PM", end_time: "03:45 PM", type: "Teaching" },
+  ];
+
+  const [periods, setPeriods] = useState(morningPeriods);
+
+  const handleShiftSelect = (shift: "morning" | "day") => {
+    setSelectedShift(shift);
+    if (shift === "morning") {
+      setPeriods(morningPeriods);
+      setTeachers(prev => prev.map(t => ({
+        ...t,
+        free_time_start: "06:30 AM",
+        free_time_end: "10:30 AM"
+      })));
+    } else {
+      setPeriods(dayPeriods);
+      setTeachers(prev => prev.map(t => ({
+        ...t,
+        free_time_start: "10:45 AM",
+        free_time_end: "04:00 PM"
+      })));
+    }
+  };
 
   const [dayPeriodCounts, setDayPeriodCounts] = useState<Record<string, number>>({
     "Sunday": 6,
@@ -391,9 +514,9 @@ export function SimpleRoutineWizard() {
 
     try {
       const payload = {
-        routine_title: routineTitle,
-        campus_name: campusName,
-        address: campusAddress,
+        routine_title: campusInfo.routineTitle,
+        campus_name: campusInfo.campusName,
+        address: campusInfo.campusAddress,
         days: selectedDays,
         periods: periods,
         day_period_counts: dayPeriodCounts,
@@ -467,7 +590,7 @@ export function SimpleRoutineWizard() {
               </span>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl leading-relaxed">
-              Define faculty members with their abbreviation (e.g. <span className="font-semibold text-zinc-700 dark:text-zinc-300">[BRL]</span>), contact phone, and time windows. Generates standard campus-formatted routines with TH/PR/TU badges and instant live routine streaming.
+              Define faculty members with their abbreviation (e.g. <span className="font-semibold text-zinc-700 dark:text-zinc-300">[BRL]</span>), contact phone, and time windows. Updating campus name or address automatically syncs across the Live Routine Watch and export documents.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -509,7 +632,7 @@ export function SimpleRoutineWizard() {
       {/* Routine Configuration Card */}
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-6">
         
-        {/* Campus Header Configuration */}
+        {/* Campus Header Configuration (Syncs everywhere in real-time) */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 border-b border-zinc-100 pb-5 dark:border-zinc-800">
           <div>
             <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 uppercase mb-1">
@@ -517,8 +640,8 @@ export function SimpleRoutineWizard() {
             </label>
             <input
               type="text"
-              value={campusName}
-              onChange={(e) => setCampusName(e.target.value)}
+              value={campusInfo.campusName}
+              onChange={(e) => updateCampusInfo({ campusName: e.target.value })}
               placeholder="e.g. Ratna Rajyalaxmi Campus"
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
             />
@@ -529,8 +652,8 @@ export function SimpleRoutineWizard() {
             </label>
             <input
               type="text"
-              value={campusAddress}
-              onChange={(e) => setCampusAddress(e.target.value)}
+              value={campusInfo.campusAddress}
+              onChange={(e) => updateCampusInfo({ campusAddress: e.target.value })}
               placeholder="e.g. Pradarshanimarga, Kathmandu Nepal"
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
             />
@@ -541,8 +664,8 @@ export function SimpleRoutineWizard() {
             </label>
             <input
               type="text"
-              value={routineTitle}
-              onChange={(e) => setRoutineTitle(e.target.value)}
+              value={campusInfo.routineTitle}
+              onChange={(e) => updateCampusInfo({ routineTitle: e.target.value })}
               placeholder="e.g. BCA Academic Routine 2026"
               className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
             />
@@ -890,20 +1013,68 @@ export function SimpleRoutineWizard() {
           )}
         </div>
 
-        {/* Step 4: Working Days & Dynamic Daily Periods */}
-        <div className="space-y-3">
+        {/* Step 4: Working Days, Shift Presets & Periods Configuration */}
+        <div className="space-y-4">
           <div className="border-b border-zinc-100 pb-2 dark:border-zinc-800">
             <div className="flex items-center gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white font-bold text-xs dark:bg-zinc-100 dark:text-zinc-900">
                 4
               </span>
               <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                Working Days & Morning Periods Configuration
+                Shift &amp; Working Periods Configuration
               </h3>
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Set which days the campus runs and review the period timings (including the 20-min Interval).
+              Choose your campus shift (Morning or Day) or customize period slots. Classes are automatically packed consecutively with zero student idle gaps.
             </p>
+          </div>
+
+          {/* Shift Selector */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-800/40 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
+                Select Campus Shift:
+              </label>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                ✓ Zero Student Waiting Gaps
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleShiftSelect("morning")}
+                className={cn(
+                  "flex items-center justify-between rounded-xl border p-3 text-left transition-all cursor-pointer",
+                  selectedShift === "morning"
+                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                )}
+              >
+                <div>
+                  <div className="text-xs font-black">🌅 Morning Shift</div>
+                  <div className="text-[11px] opacity-80 mt-0.5">06:30 AM &ndash; 10:30 AM (5 Periods + Break)</div>
+                </div>
+                {selectedShift === "morning" && <Check className="h-4 w-4 shrink-0" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleShiftSelect("day")}
+                className={cn(
+                  "flex items-center justify-between rounded-xl border p-3 text-left transition-all cursor-pointer",
+                  selectedShift === "day"
+                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                )}
+              >
+                <div>
+                  <div className="text-xs font-black">☀️ Day Shift</div>
+                  <div className="text-[11px] opacity-80 mt-0.5">10:45 AM &ndash; 03:45 PM (6 Periods + Lunch)</div>
+                </div>
+                {selectedShift === "day" && <Check className="h-4 w-4 shrink-0" />}
+              </button>
+            </div>
           </div>
 
           {/* Active Days */}
@@ -986,7 +1157,7 @@ export function SimpleRoutineWizard() {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-black text-zinc-900 dark:text-white">
-                  {generatedRoutine.name || "BCA College Timetable"}
+                  {generatedRoutine.name || campusInfo.routineTitle || "BCA College Timetable"}
                 </h3>
                 <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
                   <Check className="h-3 w-3" />
@@ -1133,13 +1304,13 @@ export function SimpleRoutineWizard() {
           {activeViewMode === "sheet" && selectedSemesterTab && generatedRoutine.semester_routines[selectedSemesterTab] && (
             <div className="space-y-3">
               <CampusRoutineSheet
-                campusName={generatedRoutine.campus_name || campusName}
-                address={generatedRoutine.address || campusAddress}
+                campusName={generatedRoutine.campus_name || campusInfo.campusName}
+                address={generatedRoutine.address || campusInfo.campusAddress}
                 programName="Bachelors in Computer Applications (BCA)"
                 semesterName={selectedSemesterTab.toUpperCase()}
                 sectionName={generatedRoutine.semester_routines[selectedSemesterTab].section_name || "A"}
                 roomNumber={generatedRoutine.semester_routines[selectedSemesterTab].room_number || "101"}
-                title="Daily Class Routine"
+                title={generatedRoutine.name || campusInfo.routineTitle || "Daily Class Routine"}
                 days={generatedRoutine.days || []}
                 periods={generatedRoutine.periods || periods}
                 entries={generatedRoutine.semester_routines[selectedSemesterTab].entries || []}
@@ -1368,7 +1539,9 @@ export function SimpleRoutineWizard() {
           onClose={() => setIsLiveWatchOpen(false)}
           timetable={{
             id: generatedRoutine.timetable_id,
-            name: generatedRoutine.name,
+            name: generatedRoutine.name || campusInfo.routineTitle,
+            campus_name: generatedRoutine.campus_name || campusInfo.campusName,
+            address: generatedRoutine.address || campusInfo.campusAddress,
             entries: Object.values(generatedRoutine.semester_routines || {}).flatMap((s: any) => s.entries || []),
             periods: generatedRoutine.periods || periods,
             teacher_directory: generatedRoutine.teacher_directory || [],

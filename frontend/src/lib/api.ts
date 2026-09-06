@@ -11,10 +11,23 @@ export async function fetchApi<T>(endpoint: string, options?: RequestInit): Prom
     const res = await fetch(url, { ...options, headers });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: `HTTP error ${res.status}` }));
-      throw new Error(err.detail || `Request failed with status ${res.status}`);
+      let errorMsg = `Request failed with status ${res.status}`;
+      if (typeof err.detail === "string") {
+        errorMsg = err.detail;
+      } else if (Array.isArray(err.detail)) {
+        errorMsg = err.detail.map((d: any) => d.msg ? `${d.loc ? d.loc.slice(-1)[0] + ": " : ""}${d.msg}` : JSON.stringify(d)).join("; ");
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      throw new Error(errorMsg);
     }
     return res.json();
   } catch (error: any) {
+    if (error.name === "TypeError" && (error.message.includes("fetch") || error.message.includes("Failed to fetch") || error.message.includes("NetworkError"))) {
+      const connErr = new Error("Unable to connect to backend server. Please make sure the FastAPI server is running (uvicorn app.main:app --reload --port 8000).");
+      console.error(`API Connection Error on ${endpoint}:`, connErr);
+      throw connErr;
+    }
     console.error(`API Error on ${endpoint}:`, error);
     throw error;
   }

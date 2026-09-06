@@ -65,6 +65,7 @@ def setup_clean_bca_structure(db: Session):
     db.add(academic_year)
     db.flush()
 
+    created_semesters = []
     for sem_num in range(1, 9):
         sem = Semester(
             program_id=prog_bca.id,
@@ -73,6 +74,7 @@ def setup_clean_bca_structure(db: Session):
         )
         db.add(sem)
         db.flush()
+        created_semesters.append(sem)
         
         sec = Section(semester_id=sem.id, name=f"BCA {sem_num}th Sem", student_count=40)
         db.add(sec)
@@ -83,13 +85,105 @@ def setup_clean_bca_structure(db: Session):
     db.add_all([rt_class, rt_lab])
     db.flush()
 
-    r1 = Room(room_number="Room 101", capacity=50, room_type_id=rt_class.id, department_id=dept.id)
-    r2 = Room(room_number="Room 102", capacity=50, room_type_id=rt_class.id, department_id=dept.id)
-    r3 = Room(room_number="Room 103", capacity=50, room_type_id=rt_class.id, department_id=dept.id)
-    r4 = Room(room_number="Room 104", capacity=50, room_type_id=rt_class.id, department_id=dept.id)
-    lab1 = Room(room_number="Computer Lab 1", capacity=45, room_type_id=rt_lab.id, department_id=dept.id)
-    lab2 = Room(room_number="Computer Lab 2", capacity=45, room_type_id=rt_lab.id, department_id=dept.id)
-    db.add_all([r1, r2, r3, r4, lab1, lab2])
+    # 5. Official BCA Subjects by Semester
+    official_bca_curriculum = {
+        1: [
+            {"code": "BCA 101", "name": "Computer Fundamentals & Applications", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#3B82F6"},
+            {"code": "BCA 102", "name": "C Programming", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#6366F1"},
+            {"code": "BCA 103", "name": "Digital Logic", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#EC4899"},
+            {"code": "BCA 104", "name": "Mathematics I", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#10B981"},
+            {"code": "BCA 105", "name": "Professional Communication & Ethics", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#F59E0B"},
+            {"code": "BCA 106", "name": "Hardware Workshop [PR]", "c": 2, "w": 2, "l": 0, "p": 2, "is_lab": True, "col": "#8B5CF6"},
+            {"code": "BCA 102P", "name": "C Programming Lab [PR]", "c": 2, "w": 2, "l": 0, "p": 2, "is_lab": True, "col": "#06B6D4"},
+        ],
+        2: [
+            {"code": "BCA 151", "name": "Discrete Structure", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#10B981"},
+            {"code": "BCA 152", "name": "Microprocessor & Computer Architecture", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#EC4899"},
+            {"code": "BCA 153", "name": "Object Oriented Programming in Java", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#6366F1"},
+            {"code": "BCA 154", "name": "Mathematics II", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#10B981"},
+            {"code": "BCA 155", "name": "UX/UI Design", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#06B6D4"},
+            {"code": "BCA 156", "name": "Principles of Management", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#F59E0B"},
+            {"code": "BCA 153P", "name": "Java Programming Lab [PR]", "c": 2, "w": 2, "l": 0, "p": 2, "is_lab": True, "col": "#8B5CF6"},
+        ],
+        3: [
+            {"code": "BCA 201", "name": "Data Structures and Algorithms", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#3B82F6"},
+            {"code": "BCA 202", "name": "Database Management System", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#6366F1"},
+            {"code": "BCA 203", "name": "Web Technology I", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#06B6D4"},
+            {"code": "BCA 204", "name": "System Analysis and Design", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#F59E0B"},
+            {"code": "BCA 205", "name": "Probability and Statistics", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#10B981"},
+            {"code": "BCA 206", "name": "Applied Economics", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#EC4899"},
+            {"code": "BCA 201P", "name": "DSA & DBMS Lab [PR]", "c": 2, "w": 2, "l": 0, "p": 2, "is_lab": True, "col": "#8B5CF6"},
+        ],
+        4: [
+            {"code": "BCA 251", "name": "Operating System", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#EC4899"},
+            {"code": "BCA 252", "name": "Software Engineering", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#6366F1"},
+            {"code": "BCA 253", "name": "Numerical Methods", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#10B981"},
+            {"code": "BCA 254", "name": "Python Programming", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#06B6D4"},
+            {"code": "BCA 255", "name": "Web Technology II", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#3B82F6"},
+            {"code": "BCA 256", "name": "Project-I [PR]", "c": 3, "w": 3, "l": 0, "p": 3, "is_lab": True, "col": "#8B5CF6"},
+        ],
+        5: [
+            {"code": "BCA 301", "name": "Computer Network", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#3B82F6"},
+            {"code": "BCA 302", "name": "Artificial Intelligence", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#6366F1"},
+            {"code": "BCA 303", "name": "Advance Java", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#06B6D4"},
+            {"code": "BCA 304", "name": "MIS & e-Business", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#F59E0B"},
+            {"code": "BCA 305", "name": "Society and Technology", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#EC4899"},
+            {"code": "BCA 306", "name": "Project-II [PR]", "c": 3, "w": 3, "l": 0, "p": 3, "is_lab": True, "col": "#8B5CF6"},
+        ],
+        6: [
+            {"code": "BCA 351", "name": "Computer Graphics and Animation", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#EC4899"},
+            {"code": "BCA 352", "name": "Mobile Programming", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#06B6D4"},
+            {"code": "BCA 353", "name": "Cryptography & Network Security", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#3B82F6"},
+            {"code": "BCA 354", "name": "Technical Writing", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#F59E0B"},
+            {"code": "BCA 355", "name": "Distributed System", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#6366F1"},
+            {"code": "BCA 356", "name": "Project-III [PR]", "c": 3, "w": 3, "l": 0, "p": 3, "is_lab": True, "col": "#8B5CF6"},
+        ],
+        7: [
+            {"code": "BCA 401", "name": "Cyber Security & Ethical Hacking", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#3B82F6"},
+            {"code": "BCA 402", "name": "Software Project Management", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#F59E0B"},
+            {"code": "BCA 403", "name": "Financial Accounting", "c": 3, "w": 4, "l": 4, "p": 0, "is_lab": False, "col": "#10B981"},
+            {"code": "BCA 404", "name": "Project-IV [PR]", "c": 3, "w": 3, "l": 0, "p": 3, "is_lab": True, "col": "#8B5CF6"},
+            {"code": "BCA 405", "name": "Machine Learning (Elective I)", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#6366F1"},
+            {"code": "BCA 406", "name": "Dotnet Technology (Elective II)", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#06B6D4"},
+        ],
+        8: [
+            {"code": "BCA 451", "name": "Cloud Computing", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#3B82F6"},
+            {"code": "BCA 452", "name": "Internship [PR]", "c": 4, "w": 4, "l": 0, "p": 4, "is_lab": True, "col": "#8B5CF6"},
+            {"code": "BCA 453", "name": "Network Administration (Elective III)", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#06B6D4"},
+            {"code": "BCA 454", "name": "Digital Marketing & SEO (Elective IV)", "c": 3, "w": 4, "l": 3, "p": 1, "is_lab": False, "col": "#F59E0B"},
+        ],
+    }
+
+    for sem_num, subj_list in official_bca_curriculum.items():
+        sem_obj = created_semesters[sem_num - 1]
+        for item in subj_list:
+            sub = Subject(
+                semester_id=sem_obj.id,
+                code=item["code"],
+                name=item["name"],
+                credit_hours=item["c"],
+                weekly_periods=item["w"],
+                lecture_periods=item["l"],
+                practical_periods=item["p"],
+                required_room_type_id=rt_lab.id if item["is_lab"] else rt_class.id,
+                color_code=item["col"],
+            )
+            db.add(sub)
+    db.flush()
+
+    rooms = [
+        Room(room_number="Room 101", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Room 102", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Room 201", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Room 202", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Room 301", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Room 302", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Room 401", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Room 402", capacity=50, room_type_id=rt_class.id, department_id=dept.id),
+        Room(room_number="Computer Lab 1", capacity=45, room_type_id=rt_lab.id, department_id=dept.id),
+        Room(room_number="Computer Lab 2", capacity=45, room_type_id=rt_lab.id, department_id=dept.id),
+    ]
+    db.add_all(rooms)
     db.flush()
 
     # 5. Working Days & Default Periods (Sun - Thu: 6 periods, Fri: 4 periods)

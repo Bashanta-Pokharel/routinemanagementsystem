@@ -16,6 +16,7 @@ def get_working_days(db: Session = Depends(get_db)):
     for d in days:
         resp = WorkingDayResponse.from_orm(d)
         resp.periods_count = len(d.periods)
+        resp.periods = [PeriodResponse.from_orm(p) for p in sorted(d.periods, key=lambda x: x.order_index)]
         res.append(resp)
     return res
 

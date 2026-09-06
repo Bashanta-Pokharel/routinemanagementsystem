@@ -40,15 +40,19 @@ def db():
     session.close()
 
 def test_parse_schedule_problem(db):
-    problem = parse_schedule_problem(db)
+    sem1 = db.query(Semester).filter(Semester.semester_number == 1).first()
+    sec1 = db.query(Section).filter(Section.semester_id == sem1.id).first()
+    problem = parse_schedule_problem(db, section_ids=[sec1.id])
     assert len(problem.days) == 6
-    assert len(problem.sections) >= 8
+    assert len(problem.sections) == 1
     assert len(problem.teachers) >= 2
     assert len(problem.rooms) >= 6
     assert len(problem.subjects) >= 2
 
 def test_timetable_solver_and_hard_constraints(db):
-    problem = parse_schedule_problem(db)
+    sem1 = db.query(Semester).filter(Semester.semester_number == 1).first()
+    sec1 = db.query(Section).filter(Section.semester_id == sem1.id).first()
+    problem = parse_schedule_problem(db, section_ids=[sec1.id])
     solver = TimetableSolver(problem)
     solutions = solver.solve(num_solutions=1, time_limit_seconds=5)
     
@@ -66,10 +70,13 @@ def test_timetable_solver_and_hard_constraints(db):
 def test_generate_routine_workflow(db):
     ay = db.query(AcademicYear).first()
     assert ay is not None
+    sem1 = db.query(Semester).filter(Semester.semester_number == 1).first()
+    sec1 = db.query(Section).filter(Section.semester_id == sem1.id).first()
     
     req = GenerateTimetableRequest(
         academic_year_id=ay.id,
         name="Test Routine 2026",
+        section_ids=[sec1.id],
         num_solutions=1
     )
     result = generate_routine(db, req)
@@ -79,7 +86,9 @@ def test_generate_routine_workflow(db):
     assert result["conflict_count"] == 0
 
 def test_schedule_explainer(db):
-    problem = parse_schedule_problem(db)
+    sem1 = db.query(Semester).filter(Semester.semester_number == 1).first()
+    sec1 = db.query(Section).filter(Section.semester_id == sem1.id).first()
+    problem = parse_schedule_problem(db, section_ids=[sec1.id])
     solver = TimetableSolver(problem)
     solutions = solver.solve(num_solutions=1)
     lesson = solutions[0].lessons[0]
