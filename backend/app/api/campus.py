@@ -85,7 +85,7 @@ def create_program(prog_in: ProgramCreate, db: Session = Depends(get_db)):
     db.add(p)
     db.commit()
     db.refresh(p)
-    # Auto create 8 semesters for convenience
+    # Auto create semesters for convenience
     for i in range(1, p.total_semesters + 1):
         sem = Semester(program_id=p.id, semester_number=i, name=f"Semester {i}")
         db.add(sem)
@@ -93,6 +93,15 @@ def create_program(prog_in: ProgramCreate, db: Session = Depends(get_db)):
     resp = ProgramResponse.from_orm(p)
     resp.department_name = p.department.name if p.department else None
     return resp
+
+@router.delete("/programs/{id}")
+def delete_program(id: int, db: Session = Depends(get_db)):
+    p = db.query(Program).filter(Program.id == id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Program not found")
+    db.delete(p)
+    db.commit()
+    return {"status": "success", "message": "Program deleted"}
 
 # --- Academic Year Endpoints --- #
 @router.get("/academic-years", response_model=List[AcademicYearResponse])

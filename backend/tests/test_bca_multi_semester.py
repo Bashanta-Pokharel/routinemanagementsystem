@@ -144,3 +144,73 @@ def test_bca_multi_semester_concurrent_scheduling(db):
     tt = db.query(Timetable).filter(Timetable.id == result["timetable_id"]).first()
     assert tt is not None
     assert len(tt.entries) == 32
+
+
+def test_demo_teacher_and_single_class_per_day_guarantee(db):
+    """
+    Test that:
+    1. No subject is EVER scheduled more than once per day (0 or 1 class/day).
+    2. When a teacher is only available on 2 days, the remaining periods are assigned to a Demo Teacher on other days.
+    """
+    days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    periods = [
+        {"name": "Period 1", "start_time": "10:00 AM", "end_time": "11:00 AM", "type": "Teaching"},
+        {"name": "Period 2", "start_time": "11:00 AM", "end_time": "12:00 PM", "type": "Teaching"},
+        {"name": "Break", "start_time": "12:00 PM", "end_time": "12:30 PM", "type": "Break"},
+        {"name": "Period 3", "start_time": "12:30 PM", "end_time": "01:30 PM", "type": "Teaching"},
+        {"name": "Period 4", "start_time": "01:30 PM", "end_time": "02:30 PM", "type": "Teaching"},
+    ]
+
+    # Teacher ST is ONLY available on Sunday and Monday (2 days)
+    teachers = [
+        {
+            "name": "Teacher ST",
+            "speciality": "Society and Technology",
+            "free_time_start": "10:00 AM",
+            "free_time_end": "02:30 PM",
+            "free_days": ["Sunday", "Monday"],
+            "max_classes_per_day": 2
+        }
+    ]
+
+    # Subject requires 4 weekly periods
+    running_semesters = [
+        {
+            "semester_number": 5,
+            "semester_name": "BCA Semester 5",
+            "section_name": "BCA 5th Sem",
+            "room_name": "Room 501",
+            "subjects": [
+                {"name": "Society and Technology", "code": "BCA305", "weekly_periods": 4, "teacher_name": "Teacher ST"},
+            ]
+        }
+    ]
+
+    result = generate_bca_multi_semester_routine(
+        db=db,
+        running_semesters=running_semesters,
+        teachers_list=teachers,
+        days_list=days,
+        periods_list=periods,
+        routine_title="BCA Sem 5 Demo Teacher Test"
+    )
+
+    assert result["conflict_count"] == 0
+    assert len(result["all_entries"]) == 4
+
+    # 1. STRICT CHECK: No day has more than 1 class of Society and Technology!
+    day_counts = {}
+    for entry in result["all_entries"]:
+        d_name = entry["day_name"]
+        day_counts[d_name] = day_counts.get(d_name, 0) + 1
+        assert day_counts[d_name] == 1, f"Violation: {entry['subject_name']} scheduled {day_counts[d_name]} times on {d_name}!"
+
+    # 2. Check that 2 periods were taught by Teacher ST and 2 periods by Demo Teacher on other days
+    st_entries = [e for e in result["all_entries"] if e["teacher_name"] == "Teacher ST"]
+    demo_entries = [e for e in result["all_entries"] if "Demo" in e["teacher_name"]]
+
+    assert len(st_entries) == 2
+    assert len(demo_entries) == 2
+    for e in demo_entries:
+        assert e["day_name"] in ("Tuesday", "Wednesday", "Thursday", "Friday")
+        assert e["teacher_abbreviation"] == "DEMO"

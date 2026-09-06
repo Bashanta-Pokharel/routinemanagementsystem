@@ -165,13 +165,12 @@ export default function LiveWatchPage() {
   ], []);
 
   const dayPeriods = useMemo(() => [
-    { name: "Period 1", start_time: "10:45 AM", end_time: "11:30 AM", order_index: 1, period_type: "Teaching" },
-    { name: "Period 2", start_time: "11:30 AM", end_time: "12:15 PM", order_index: 2, period_type: "Teaching" },
-    { name: "Period 3", start_time: "12:15 PM", end_time: "01:00 PM", order_index: 3, period_type: "Teaching" },
+    { name: "Period 1", start_time: "10:00 AM", end_time: "11:00 AM", order_index: 1, period_type: "Teaching" },
+    { name: "Period 2", start_time: "11:00 AM", end_time: "12:00 PM", order_index: 2, period_type: "Teaching" },
+    { name: "Period 3", start_time: "12:00 PM", end_time: "01:00 PM", order_index: 3, period_type: "Teaching" },
     { name: "Interval", start_time: "01:00 PM", end_time: "01:30 PM", order_index: 4, period_type: "Break" },
-    { name: "Period 4", start_time: "01:30 PM", end_time: "02:15 PM", order_index: 5, period_type: "Teaching" },
-    { name: "Period 5", start_time: "02:15 PM", end_time: "03:00 PM", order_index: 6, period_type: "Teaching" },
-    { name: "Period 6", start_time: "03:00 PM", end_time: "03:45 PM", order_index: 7, period_type: "Teaching" },
+    { name: "Period 4", start_time: "01:30 PM", end_time: "02:30 PM", order_index: 5, period_type: "Teaching" },
+    { name: "Period 5", start_time: "02:30 PM", end_time: "03:30 PM", order_index: 6, period_type: "Teaching" },
   ], []);
 
   const eveningPeriods = useMemo(() => [

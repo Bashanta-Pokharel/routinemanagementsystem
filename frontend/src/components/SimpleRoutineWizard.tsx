@@ -170,7 +170,6 @@ export function SimpleRoutineWizard() {
         { id: "s1_4", name: "Mathematics-I", code: "BCA 104", course_type: "TH", weekly_periods: 3, teacher_name: "Pujan Mahat" },
         { id: "s1_5", name: "Professional Communication and Ethics", code: "BCA 105", course_type: "TH", weekly_periods: 3, teacher_name: "Sabita Thapa" },
         { id: "s1_6", name: "Hardware Workshop", code: "BCA 106", course_type: "PR", weekly_periods: 2, teacher_name: "Bhupendra Ram Luhar" },
-        { id: "s1_7", name: "C Programming Lab", code: "BCA 102P", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
       ]
     },
     {
@@ -186,7 +185,6 @@ export function SimpleRoutineWizard() {
         { id: "s2_4", name: "Mathematics-II", code: "BCA 154", course_type: "TH", weekly_periods: 3, teacher_name: "Pujan Mahat" },
         { id: "s2_5", name: "UX/UI Design", code: "BCA 155", course_type: "TH", weekly_periods: 3, teacher_name: "Bijaya Mishra" },
         { id: "s2_6", name: "Principles of Management", code: "BCA 156", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
-        { id: "s2_7", name: "Java Programming Lab", code: "BCA 153P", course_type: "PR", weekly_periods: 3, teacher_name: "Ananda KC" },
       ]
     },
     {
@@ -202,7 +200,6 @@ export function SimpleRoutineWizard() {
         { id: "s3_4", name: "System Analysis and Design", code: "BCA 204", course_type: "TH", weekly_periods: 3, teacher_name: "Ananda KC" },
         { id: "s3_5", name: "Probability and Statistics", code: "BCA 205", course_type: "TH", weekly_periods: 3, teacher_name: "Sharmila Bhattarai" },
         { id: "s3_6", name: "Applied Economics", code: "BCA 206", course_type: "TH", weekly_periods: 2, teacher_name: "Sabita Thapa" },
-        { id: "s3_7", name: "DSA & DBMS Lab", code: "BCA 201P", course_type: "PR", weekly_periods: 3, teacher_name: "Dipendra Nepal" },
       ]
     },
     {
@@ -285,7 +282,7 @@ export function SimpleRoutineWizard() {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
   ]);
 
-  const [selectedShift, setSelectedShift] = useState<"morning" | "day" | "custom">("morning");
+  const [selectedShift, setSelectedShift] = useState<"morning" | "day" | "evening" | "custom">("morning");
 
   const morningPeriods = [
     { name: "Period 1", start_time: "06:30 AM", end_time: "07:15 AM", type: "Teaching" },
@@ -297,18 +294,26 @@ export function SimpleRoutineWizard() {
   ];
 
   const dayPeriods = [
-    { name: "Period 1", start_time: "10:45 AM", end_time: "11:30 AM", type: "Teaching" },
-    { name: "Period 2", start_time: "11:30 AM", end_time: "12:15 PM", type: "Teaching" },
-    { name: "Period 3", start_time: "12:15 PM", end_time: "01:00 PM", type: "Teaching" },
+    { name: "Period 1", start_time: "10:00 AM", end_time: "11:00 AM", type: "Teaching" },
+    { name: "Period 2", start_time: "11:00 AM", end_time: "12:00 PM", type: "Teaching" },
+    { name: "Period 3", start_time: "12:00 PM", end_time: "01:00 PM", type: "Teaching" },
     { name: "Interval", start_time: "01:00 PM", end_time: "01:30 PM", type: "Break" },
-    { name: "Period 4", start_time: "01:30 PM", end_time: "02:15 PM", type: "Teaching" },
-    { name: "Period 5", start_time: "02:15 PM", end_time: "03:00 PM", type: "Teaching" },
-    { name: "Period 6", start_time: "03:00 PM", end_time: "03:45 PM", type: "Teaching" },
+    { name: "Period 4", start_time: "01:30 PM", end_time: "02:30 PM", type: "Teaching" },
+    { name: "Period 5", start_time: "02:30 PM", end_time: "03:30 PM", type: "Teaching" },
+  ];
+
+  const eveningPeriods = [
+    { name: "Period 1", start_time: "04:00 PM", end_time: "04:45 PM", type: "Teaching" },
+    { name: "Period 2", start_time: "04:45 PM", end_time: "05:30 PM", type: "Teaching" },
+    { name: "Period 3", start_time: "05:30 PM", end_time: "06:15 PM", type: "Teaching" },
+    { name: "Interval", start_time: "06:15 PM", end_time: "06:35 PM", type: "Break" },
+    { name: "Period 4", start_time: "06:35 PM", end_time: "07:20 PM", type: "Teaching" },
+    { name: "Period 5", start_time: "07:20 PM", end_time: "08:05 PM", type: "Teaching" },
   ];
 
   const [periods, setPeriods] = useState(morningPeriods);
 
-  const handleShiftSelect = (shift: "morning" | "day") => {
+  const handleShiftSelect = (shift: "morning" | "day" | "evening") => {
     setSelectedShift(shift);
     if (shift === "morning") {
       setPeriods(morningPeriods);
@@ -317,12 +322,19 @@ export function SimpleRoutineWizard() {
         free_time_start: "06:30 AM",
         free_time_end: "10:30 AM"
       })));
-    } else {
+    } else if (shift === "day") {
       setPeriods(dayPeriods);
       setTeachers(prev => prev.map(t => ({
         ...t,
-        free_time_start: "10:45 AM",
-        free_time_end: "04:00 PM"
+        free_time_start: "10:00 AM",
+        free_time_end: "03:30 PM"
+      })));
+    } else if (shift === "evening") {
+      setPeriods(eveningPeriods);
+      setTeachers(prev => prev.map(t => ({
+        ...t,
+        free_time_start: "04:00 PM",
+        free_time_end: "08:30 PM"
       })));
     }
   };
@@ -454,12 +466,59 @@ export function SimpleRoutineWizard() {
     }));
   };
 
+  // Helper to identify paired Theory and Practical subjects (e.g. C Programming <-> C Programming Lab, Java <-> Java Lab)
+  const isRelatedSubjectPair = (subA: SubjectItem, subB: SubjectItem): boolean => {
+    if (subA.id === subB.id) return false;
+    
+    // 1. Check Course Code Matching (e.g. BCA 102 vs BCA 102P, BCA 153 vs BCA 153P, BCA 201 vs BCA 201P)
+    const codeA = (subA.code || "").replace(/[^\w]/g, "").toUpperCase();
+    const codeB = (subB.code || "").replace(/[^\w]/g, "").toUpperCase();
+    if (codeA && codeB) {
+      if (codeA.startsWith(codeB) || codeB.startsWith(codeA)) return true;
+      if (codeA.replace(/P$/, "") === codeB.replace(/P$/, "")) return true;
+    }
+
+    // 2. Keyword & Topic Matching in Name
+    const nameA = (subA.name || "").toLowerCase();
+    const nameB = (subB.name || "").toLowerCase();
+
+    const topicGroups = [
+      ["c prog", "programming in c", "c lab", "c programming"],
+      ["java", "oop in java", "advance java", "java lab", "java programming"],
+      ["dsa", "data structure", "dbms", "database"],
+      ["python", "project-i", "project 1"],
+      ["ai", "artificial intelligence", "project-ii", "project 2"],
+      ["mobile", "crypto", "security lab", "project-iii", "project 3"],
+      ["cyber", "ethical hacking", "machine learning", "project-iv", "project 4"],
+      ["cloud", "internship", "cloud project"],
+      ["hardware", "digital logic", "microprocessor"]
+    ];
+
+    for (const group of topicGroups) {
+      const matchA = group.some(k => nameA.includes(k));
+      const matchB = group.some(k => nameB.includes(k));
+      if (matchA && matchB) return true;
+    }
+
+    return false;
+  };
+
   const handleUpdateSubject = (semNum: number, subId: string, field: keyof SubjectItem, value: any) => {
     setSemesters(semesters.map(s => {
       if (s.semester_number === semNum) {
+        const targetSub = s.subjects.find(sub => sub.id === subId);
         return {
           ...s,
-          subjects: s.subjects.map(sub => sub.id === subId ? { ...sub, [field]: value } : sub)
+          subjects: s.subjects.map(sub => {
+            if (sub.id === subId) {
+              return { ...sub, [field]: value };
+            }
+            // Auto-sync Theory & Practical teacher: if teacher changed, assign the same teacher to related Lab/PR
+            if (field === "teacher_name" && targetSub && isRelatedSubjectPair(targetSub, sub)) {
+              return { ...sub, teacher_name: value };
+            }
+            return sub;
+          })
         };
       }
       return s;
@@ -1025,7 +1084,7 @@ export function SimpleRoutineWizard() {
               </h3>
             </div>
             <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Choose your campus shift (Morning or Day) or customize period slots. Classes are automatically packed consecutively with zero student idle gaps.
+              Choose your campus shift (Morning, Day, or Evening) or customize period slots. Classes are automatically packed consecutively with zero student idle gaps.
             </p>
           </div>
 
@@ -1040,7 +1099,7 @@ export function SimpleRoutineWizard() {
                 ✓ Zero Student Waiting Gaps
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <button
                 type="button"
                 onClick={() => handleShiftSelect("morning")}
@@ -1070,9 +1129,26 @@ export function SimpleRoutineWizard() {
               >
                 <div>
                   <div className="text-xs font-black">☀️ Day Shift</div>
-                  <div className="text-[11px] opacity-80 mt-0.5">10:45 AM &ndash; 03:45 PM (6 Periods + Lunch)</div>
+                  <div className="text-[11px] opacity-80 mt-0.5">10:00 AM &ndash; 03:30 PM (5 Periods + Lunch)</div>
                 </div>
                 {selectedShift === "day" && <Check className="h-4 w-4 shrink-0" />}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleShiftSelect("evening")}
+                className={cn(
+                  "flex items-center justify-between rounded-xl border p-3 text-left transition-all cursor-pointer",
+                  selectedShift === "evening"
+                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                )}
+              >
+                <div>
+                  <div className="text-xs font-black">🌙 Evening Shift</div>
+                  <div className="text-[11px] opacity-80 mt-0.5">04:00 PM &ndash; 08:05 PM (5 Periods + Break)</div>
+                </div>
+                {selectedShift === "evening" && <Check className="h-4 w-4 shrink-0" />}
               </button>
             </div>
           </div>
@@ -1314,7 +1390,7 @@ export function SimpleRoutineWizard() {
                 days={generatedRoutine.days || []}
                 periods={generatedRoutine.periods || periods}
                 entries={generatedRoutine.semester_routines[selectedSemesterTab].entries || []}
-                teacherDirectory={generatedRoutine.teacher_directory || []}
+                teacherDirectory={generatedRoutine.semester_routines[selectedSemesterTab].teacher_directory || []}
                 legend={generatedRoutine.legend || { TH: "Theory", TU: "Tutorial", PR: "Practical" }}
               />
             </div>

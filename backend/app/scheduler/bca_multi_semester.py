@@ -147,6 +147,24 @@ def generate_bca_multi_semester_routine(
         db.add(comp_lab)
         db.flush()
 
+    dl_lab = db.query(Room).filter(Room.room_number.in_(["Digital Logic Lab", "DL Lab"])).first()
+    if not dl_lab:
+        dl_lab = Room(room_number="Digital Logic Lab", capacity=40, room_type_id=rt_lab.id, department_id=dept.id)
+        db.add(dl_lab)
+        db.flush()
+
+    mp_lab = db.query(Room).filter(Room.room_number.in_(["Microprocessor Lab", "MP Lab"])).first()
+    if not mp_lab:
+        mp_lab = Room(room_number="Microprocessor Lab", capacity=40, room_type_id=rt_lab.id, department_id=dept.id)
+        db.add(mp_lab)
+        db.flush()
+
+    ai_lab = db.query(Room).filter(Room.room_number.in_(["AI & Network Lab", "AI Lab"])).first()
+    if not ai_lab:
+        ai_lab = Room(room_number="AI & Network Lab", capacity=40, room_type_id=rt_lab.id, department_id=dept.id)
+        db.add(ai_lab)
+        db.flush()
+
     # 2. Setup Working Days and Dynamic Periods
     day_objs = []
     for idx, d_name in enumerate(days_list):
@@ -168,18 +186,23 @@ def generate_bca_multi_semester_routine(
 
         day_period_map[day.name] = []
         for p_idx, p_info in enumerate(cur_periods_list):
+            p_name = p_info.get("name", f"Period {p_idx + 1}")
+            p_type = p_info.get("type") or p_info.get("period_type") or "Teaching"
+            if p_name.strip().lower() in ["interval", "break", "lunch", "tiffin"]:
+                p_type = "Break"
+
             p_rec = Period(
                 day_id=day.id,
-                name=p_info.get("name", f"Period {p_idx + 1}"),
+                name=p_name,
                 start_time=p_info.get("start_time", "10:00 AM"),
                 end_time=p_info.get("end_time", "11:00 AM"),
                 order_index=p_idx + 1,
-                period_type=p_info.get("type", "Teaching")
+                period_type=p_type
             )
             db.add(p_rec)
             db.flush()
             day_period_map[day.name].append(p_rec)
-            if p_rec.period_type == "Teaching":
+            if p_type == "Teaching" and p_name.strip().lower() not in ["interval", "break", "lunch", "tiffin"]:
                 all_teaching_periods.append(p_rec)
 
     # 3. Setup Teachers in Database with Speciality and Free-Time Windows
@@ -228,6 +251,21 @@ def generate_bca_multi_semester_routine(
                 db.flush()
         teacher_db_map[t_name] = t_rec
 
+    demo_t_rec = db.query(Teacher).filter(Teacher.name == "Demo / Guest Faculty").first()
+    if not demo_t_rec:
+        demo_t_rec = Teacher(
+            employee_id="BCA_DEMO001",
+            name="Demo / Guest Faculty",
+            email="demo.faculty@campus.edu",
+            phone="9800000000",
+            designation="Guest Lecturer",
+            department_id=dept.id,
+            max_hours_per_day=6.0,
+            max_hours_per_week=30.0
+        )
+        db.add(demo_t_rec)
+        db.flush()
+
     # 4. Setup Running Semesters, Sections, Rooms, and Subjects
     semester_sections = [] # List of { sem_rec, sec_rec, room_rec, subjects: [...] }
     all_subject_tasks = [] # Flat list of all subject requirements to schedule
@@ -274,8 +312,20 @@ def generate_bca_multi_semester_routine(
             if "lab" in sub_name.lower() or "practical" in sub_name.lower():
                 course_type = "PR"
 
-            # Assign Room: If Practical -> Computer Lab; If Theory/Tutorial -> Fixed Dedicated Semester Classroom
-            assigned_sub_room = comp_lab if course_type == "PR" else room_rec
+            # Assign Room: If Practical -> Dedicated Lab (Digital Logic, Microprocessor, AI/Network, or Computer Lab); If Theory/Tutorial -> Fixed Dedicated Semester Classroom
+            if course_type == "PR":
+                s_lower = sub_name.lower()
+                c_lower = sub_code.lower()
+                if "digital logic" in s_lower or "103" in c_lower:
+                    assigned_sub_room = dl_lab
+                elif "microprocessor" in s_lower or "152" in c_lower:
+                    assigned_sub_room = mp_lab
+                elif "network" in s_lower or "ai" in s_lower or "301" in c_lower or "302" in c_lower:
+                    assigned_sub_room = ai_lab
+                else:
+                    assigned_sub_room = comp_lab
+            else:
+                assigned_sub_room = room_rec
 
             # Ensure teacher exists
             if assigned_t_name not in teacher_db_map:
@@ -362,17 +412,20 @@ def generate_bca_multi_semester_routine(
     room_busy_slots = set() # (room_id, day_id, period_id)
     
     sec_day_sub_count = defaultdict(int) # (section_id, day_id, subject_id) -> count
+    sec_day_code_count = defaultdict(int) # (section_id, day_id, base_code) -> count (prevents TH & PR of same course on same day)
     sec_day_class_count = defaultdict(int) # (section_id, day_id) -> total classes
     sec_day_assigned_indices = defaultdict(list) # (section_id, day_id) -> [order_index, ...]
     teacher_day_count = defaultdict(int) # (teacher_id, day_id) -> count
+    sec_sub_preferred_order = {} # (section_id, subject_id) -> preferred period order_index
 
-    # Sort tasks: constrained teachers first
+    # Sort tasks: constrained teachers first, Theory before Practical
     def task_priority(task):
         t_meta = task["t_meta"]
         s_min = parse_time_to_minutes(t_meta.get("free_time_start", "08:00 AM"))
         e_min = parse_time_to_minutes(t_meta.get("free_time_end", "04:00 PM"))
         duration = max(1, e_min - s_min)
-        return (duration, -task["weekly_periods"])
+        type_rank = 0 if task["course_type"] == "TH" else 1
+        return (type_rank, duration, -task["weekly_periods"])
 
     all_subject_tasks.sort(key=task_priority)
 
@@ -386,6 +439,10 @@ def generate_bca_multi_semester_routine(
         t_meta = task["t_meta"]
         course_type = task["course_type"]
         weekly_needed = task["weekly_periods"]
+
+        # Base code root (e.g. BCA 103 for both TH and PR of Digital Logic)
+        clean_code = re.sub(r'[^a-zA-Z0-9]', '', (sub.code or sub.name)).upper()
+        base_code = re.sub(r'(LAB|P|PR|TU)$', '', clean_code) or clean_code
 
         t_free_start = t_meta.get("free_time_start", "08:00 AM")
         t_free_end = t_meta.get("free_time_end", "04:00 PM")
@@ -413,43 +470,52 @@ def generate_bca_multi_semester_routine(
 
             candidate_slots.append(p)
 
-        # Slot cost function for ZERO STUDENT IDLE GAPS:
+        # Slot cost function:
+        # 1. Zero duplicates on same day for the same subject/code
+        # 2. Theory prioritized on Sun/Mon-Wed; Practical/Tutorial on Thu-Fri
+        # 3. Same period consistency across days
+        # 4. Contiguous packing
         def compute_slot_cost(p):
             existing_indices = sec_day_assigned_indices[(sec.id, p.day_id)]
-            dup_penalty = sec_day_sub_count[(sec.id, p.day_id, sub.id)] * 2000
-            load_cost = sec_day_class_count[(sec.id, p.day_id)] * 80
+            dup_penalty = (sec_day_sub_count[(sec.id, p.day_id, sub.id)] + sec_day_code_count[(sec.id, p.day_id, base_code)]) * 10000000
             
+            day_order = p.day.order_index if p.day.order_index is not None else 0
+            if course_type == "TH":
+                day_priority_cost = day_order * 10000  # Early days for Theory (Mon-Wed)
+            else:
+                day_priority_cost = (10 - day_order) * 10000  # Later days for Practical/Tutorial (Thu-Fri)
+            
+            pref_order = sec_sub_preferred_order.get((sec.id, base_code))
+            period_consistency_cost = abs(p.order_index - pref_order) * 2000 if pref_order is not None else 0
+
             if existing_indices:
                 min_idx = min(existing_indices)
                 max_idx = max(existing_indices)
-                if p.order_index == min_idx - 1 or p.order_index == max_idx + 1:
-                    gap_cost = 0 # Directly adjacent
-                elif min_idx <= p.order_index <= max_idx:
-                    gap_cost = 0 # Fills middle hole
+                if p.order_index == min_idx - 1 or p.order_index == max_idx + 1 or min_idx <= p.order_index <= max_idx:
+                    gap_cost = 0
                 else:
                     gap_dist = min(abs(p.order_index - min_idx), abs(p.order_index - max_idx))
-                    gap_cost = gap_dist * 400
+                    gap_cost = gap_dist * 500
             else:
-                # First class of day: strongly prefer starting from early periods
-                gap_cost = (p.order_index - 1) * 60
+                gap_cost = (p.order_index - 1) * 200
 
             teacher_cost = teacher_day_count[(teacher.id, p.day_id)] * 20
-            return (dup_penalty, gap_cost, load_cost, p.order_index, teacher_cost, p.day.order_index)
+            return (dup_penalty, day_priority_cost, period_consistency_cost, gap_cost, p.order_index, teacher_cost)
 
         candidate_slots.sort(key=compute_slot_cost)
 
+        # Pass 1: Strictly 1 class per subject/course per day per section
         for p in candidate_slots:
             if assigned_count >= weekly_needed:
                 break
             
-            # Re-check constraints
             if (teacher.id, p.day_id, p.id) in teacher_busy_slots:
                 continue
             if (sec.id, p.day_id, p.id) in section_busy_slots:
                 continue
             if (room.id, p.day_id, p.id) in room_busy_slots:
                 continue
-            if sec_day_sub_count[(sec.id, p.day_id, sub.id)] >= 2:
+            if sec_day_sub_count[(sec.id, p.day_id, sub.id)] >= 1 or sec_day_code_count[(sec.id, p.day_id, base_code)] >= 1:
                 continue
             if teacher_day_count[(teacher.id, p.day_id)] >= max_teacher_day:
                 continue
@@ -459,9 +525,12 @@ def generate_bca_multi_semester_routine(
             section_busy_slots.add((sec.id, p.day_id, p.id))
             room_busy_slots.add((room.id, p.day_id, p.id))
             sec_day_sub_count[(sec.id, p.day_id, sub.id)] += 1
+            sec_day_code_count[(sec.id, p.day_id, base_code)] += 1
             sec_day_class_count[(sec.id, p.day_id)] += 1
             sec_day_assigned_indices[(sec.id, p.day_id)].append(p.order_index)
             teacher_day_count[(teacher.id, p.day_id)] += 1
+            if (sec.id, base_code) not in sec_sub_preferred_order:
+                sec_sub_preferred_order[(sec.id, base_code)] = p.order_index
             assigned_count += 1
 
             scheduled_entries.append({
@@ -493,6 +562,64 @@ def generate_bca_multi_semester_routine(
                 "day_name": p.day.name,
                 "explanation": f"Scheduled for {sec.name} in {teacher.name}'s available window ({t_free_start} - {t_free_end}). Zero teacher clashes."
             })
+
+        # Pass 2: If primary teacher was unavailable for some days, assign Demo Teacher on open days (STRICTLY 1 class per day per subject)
+        if assigned_count < weekly_needed:
+            fallback_slots = [
+                p for p in all_teaching_periods
+                if (sec.id, p.day_id, p.id) not in section_busy_slots
+                and (room.id, p.day_id, p.id) not in room_busy_slots
+                and sec_day_sub_count[(sec.id, p.day_id, sub.id)] == 0
+            ]
+            fallback_slots.sort(key=compute_slot_cost)
+
+            for p in fallback_slots:
+                if assigned_count >= weekly_needed:
+                    break
+                
+                if (sec.id, p.day_id, p.id) in section_busy_slots:
+                    continue
+                if (room.id, p.day_id, p.id) in room_busy_slots:
+                    continue
+                if sec_day_sub_count[(sec.id, p.day_id, sub.id)] >= 1:
+                    continue
+
+                section_busy_slots.add((sec.id, p.day_id, p.id))
+                room_busy_slots.add((room.id, p.day_id, p.id))
+                sec_day_sub_count[(sec.id, p.day_id, sub.id)] += 1
+                sec_day_class_count[(sec.id, p.day_id)] += 1
+                sec_day_assigned_indices[(sec.id, p.day_id)].append(p.order_index)
+                assigned_count += 1
+
+                scheduled_entries.append({
+                    "section_id": sec.id,
+                    "section_name": sec.name,
+                    "semester_name": task["semester"].name,
+                    "semester_number": task["semester"].semester_number,
+                    "subject_id": sub.id,
+                    "subject_name": sub.name,
+                    "subject_code": sub.code,
+                    "subject_color": sub.color_code,
+                    "course_type": course_type,
+                    "teacher_id": demo_t_rec.id,
+                    "teacher_name": "Demo / Guest Faculty",
+                    "teacher_abbreviation": "DEMO",
+                    "teacher_contact": "9800000000",
+                    "teacher_speciality": "Guest Lecturer",
+                    "teacher_free_start": "06:00 AM",
+                    "teacher_free_end": "09:00 PM",
+                    "teacher_free_days": days_list,
+                    "room_id": room.id,
+                    "room_number": room.room_number,
+                    "period_id": p.id,
+                    "period_name": p.name,
+                    "start_time": p.start_time,
+                    "end_time": p.end_time,
+                    "order_index": p.order_index,
+                    "day_id": p.day_id,
+                    "day_name": p.day.name,
+                    "explanation": f"Assigned Demo / Guest Teacher for {sub.name} on {p.day.name} to avoid duplicate daily classes ({teacher.name} unavailable)."
+                })
 
     # 5b. Post-Scheduling Compaction Phase: Eliminate any remaining idle gaps for students
     # Map periods per day

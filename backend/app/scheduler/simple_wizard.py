@@ -254,12 +254,28 @@ def generate_simple_wizard_routine(
             "free_days": free_days
         })
 
+    demo_t_rec = db.query(Teacher).filter(Teacher.name == "Demo / Guest Faculty").first()
+    if not demo_t_rec:
+        demo_t_rec = Teacher(
+            employee_id="DEMO_001",
+            name="Demo / Guest Faculty",
+            email="demo.faculty@campus.edu",
+            designation="Guest Lecturer",
+            department_id=dept.id,
+            max_hours_per_day=6.0,
+            max_hours_per_week=30.0
+        )
+        db.add(demo_t_rec)
+        db.flush()
+
     # 5. Calculate Routine Assignments
     # We need to assign each subject its weekly_periods count
     # Slots are (day_id, period_id)
     slot_assignments = {}  # period_id -> { "subject": sub_rec, "teacher": t_rec }
     sec_day_sub_count = defaultdict(int)  # (day_id, subject_id) -> count
+    sec_day_class_count = defaultdict(int)  # day_id -> count of classes
     teacher_period_busy = set()  # (teacher_id, period_id)
+    sub_preferred_order = {}  # subject_id -> preferred period order_index
 
     # Sort subjects: most constrained (smallest free time window) first
     def window_duration(s_item):
@@ -294,13 +310,25 @@ def generate_simple_wizard_routine(
                 continue
             eligible_slots.append(p)
 
-        # Sort eligible slots to spread across days evenly
-        eligible_slots.sort(key=lambda p: (sec_day_sub_count[(p.day_id, sub.id)], p.day.order_index, p.order_index))
+        # Sort eligible slots for:
+        # 1. Subject Period Consistency (e.g. C Prog in Period 1 every day)
+        # 2. Early Day Prioritization (Sun-Wed/Thu full first; Fri takes remaining)
+        def compute_wizard_cost(p):
+            dup_cost = sec_day_sub_count[(p.day_id, sub.id)] * 10000000
+            day_order = p.day.order_index if p.day.order_index is not None else 0
+            day_priority_cost = day_order * 10000
+            pref_order = sub_preferred_order.get(sub.id)
+            consistency_cost = abs(p.order_index - pref_order) * 2000 if pref_order is not None else 0
+            load_cost = sec_day_class_count[p.day_id] * 50
+            return (dup_cost, day_priority_cost, consistency_cost, load_cost, p.order_index)
 
+        eligible_slots.sort(key=compute_wizard_cost)
+
+        # Pass 1: Assign with STRICT 1 class per day per subject
         for p in eligible_slots:
             if assigned_for_sub >= needed_periods:
                 break
-            if sec_day_sub_count[(p.day_id, sub.id)] >= 2:
+            if sec_day_sub_count[(p.day_id, sub.id)] >= 1:
                 continue
             if (teacher.id, p.id) in teacher_period_busy:
                 continue
@@ -308,7 +336,10 @@ def generate_simple_wizard_routine(
             # Assign slot
             slot_assignments[p.id] = {"subject": sub, "teacher": teacher, "period": p}
             sec_day_sub_count[(p.day_id, sub.id)] += 1
+            sec_day_class_count[p.day_id] += 1
             teacher_period_busy.add((teacher.id, p.id))
+            if sub.id not in sub_preferred_order:
+                sub_preferred_order[sub.id] = p.order_index
             assigned_for_sub += 1
 
             scheduled_entries.append({
@@ -328,6 +359,43 @@ def generate_simple_wizard_routine(
                 "day_name": p.day.name,
                 "explanation": f"Scheduled in {teacher.name}'s free window ({t_free_start} - {t_free_end})."
             })
+
+        # Pass 2: If primary teacher was unavailable on other days, assign Demo Teacher on open days (STRICTLY 1 class per day)
+        if assigned_for_sub < needed_periods:
+            fallback_slots = [p for p in teaching_periods if p.id not in slot_assignments and sec_day_sub_count[(p.day_id, sub.id)] == 0]
+            fallback_slots.sort(key=lambda p: (sec_day_sub_count[(p.day_id, sub.id)], sec_day_class_count[p.day_id], p.order_index, p.day.order_index))
+
+            for p in fallback_slots:
+                if assigned_for_sub >= needed_periods:
+                    break
+                if p.id in slot_assignments:
+                    continue
+                if sec_day_sub_count[(p.day_id, sub.id)] >= 1:
+                    continue
+
+                slot_assignments[p.id] = {"subject": sub, "teacher": demo_t_rec, "period": p}
+                sec_day_sub_count[(p.day_id, sub.id)] += 1
+                sec_day_class_count[p.day_id] += 1
+                assigned_for_sub += 1
+
+                scheduled_entries.append({
+                    "section_id": section.id,
+                    "subject_id": sub.id,
+                    "subject_name": sub.name,
+                    "subject_code": sub.code,
+                    "teacher_id": demo_t_rec.id,
+                    "teacher_name": "Demo / Guest Faculty",
+                    "teacher_abbreviation": "DEMO",
+                    "room_id": room.id,
+                    "room_number": room.room_number,
+                    "period_id": p.id,
+                    "period_name": p.name,
+                    "start_time": p.start_time,
+                    "end_time": p.end_time,
+                    "day_id": p.day_id,
+                    "day_name": p.day.name,
+                    "explanation": f"Assigned Demo / Guest Teacher for {sub.name} on {p.day.name} to avoid duplicate daily classes ({teacher.name} unavailable)."
+                })
 
     # 6. Save Timetable Record to Database
     tt_name = routine_title or f"Routine - {class_name} ({datetime.utcnow().strftime('%Y-%m-%d')})"

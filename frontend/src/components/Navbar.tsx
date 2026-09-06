@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { 
   Calendar, Bell, Sparkles, User, CheckCircle2, 
-  AlertTriangle, RefreshCw, Layers, Shield, Radio
+  AlertTriangle, RefreshCw, Layers, Shield, Radio, Clock
 } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -19,6 +19,31 @@ export function Navbar({ onOpenGenerator }: NavbarProps) {
     name: "Dr. Ram Sharma",
     role: "Campus Admin",
     email: "admin@campus.edu"
+  });
+
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timeString = currentTime.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+
+  const dateString = currentTime.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 
   useEffect(() => {
@@ -68,6 +93,19 @@ export function Navbar({ onOpenGenerator }: NavbarProps) {
         <div className="hidden sm:flex items-center gap-1.5 ml-3 px-2.5 py-1 rounded-md bg-zinc-100 text-zinc-800 text-xs font-semibold border border-zinc-200">
           <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
           <span>MySQL (XAMPP)</span>
+        </div>
+      </div>
+
+      {/* Center Live Date & Time Display on Every Page */}
+      <div className="flex items-center gap-2.5 rounded-full border border-zinc-200 bg-zinc-50/90 px-4 py-1.5 text-xs shadow-xs dark:border-zinc-800 dark:bg-zinc-900/90">
+        <div className="flex items-center gap-1.5 text-zinc-900 font-mono font-bold">
+          <Clock className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
+          <span suppressHydrationWarning>{mounted ? timeString : "--:--:--"}</span>
+        </div>
+        <span className="text-zinc-300 font-light">|</span>
+        <div className="flex items-center gap-1.5 text-zinc-600 font-medium font-sans">
+          <Calendar className="h-3.5 w-3.5 text-zinc-500" />
+          <span suppressHydrationWarning>{mounted ? dateString : "Loading date..."}</span>
         </div>
       </div>
 

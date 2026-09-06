@@ -49,6 +49,7 @@ export const api = {
   createDepartment: (data: any) => fetchApi<any>("/academic/departments", { method: "POST", body: JSON.stringify(data) }),
   getPrograms: () => fetchApi<any[]>("/academic/programs"),
   createProgram: (data: any) => fetchApi<any>("/academic/programs", { method: "POST", body: JSON.stringify(data) }),
+  deleteProgram: (id: number) => fetchApi<any>(`/academic/programs/${id}`, { method: "DELETE" }),
   getAcademicYears: () => fetchApi<any[]>("/academic/academic-years"),
   getSemesters: (programId?: number) => fetchApi<any[]>(`/academic/semesters${programId ? `?program_id=${programId}` : ""}`),
   getSections: (semesterId?: number) => fetchApi<any[]>(`/academic/sections${semesterId ? `?semester_id=${semesterId}` : ""}`),
