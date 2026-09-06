@@ -125,7 +125,54 @@ def test_generate_simple_wizard_routine_with_teacher_free_times(db):
     for e in sita_entries:
         assert e["start_time"] in ("10:00 AM", "11:00 AM")
 
-    # Verify SQLite Database persistence
+    # Verify Database persistence
     tt = db.query(Timetable).filter(Timetable.id == result["timetable_id"]).first()
     assert tt is not None
     assert len(tt.entries) == len(result["entries"])
+
+def test_variable_periods_per_day(db):
+    class_name = "CSIT 2nd Sem"
+    days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+    periods = [
+        {"name": "Period 1", "start_time": "10:00 AM", "end_time": "11:00 AM", "type": "Teaching"},
+        {"name": "Period 2", "start_time": "11:00 AM", "end_time": "12:00 PM", "type": "Teaching"},
+        {"name": "Period 3", "start_time": "12:00 PM", "end_time": "01:00 PM", "type": "Teaching"},
+        {"name": "Period 4", "start_time": "01:00 PM", "end_time": "02:00 PM", "type": "Teaching"},
+        {"name": "Period 5", "start_time": "02:00 PM", "end_time": "03:00 PM", "type": "Teaching"},
+    ]
+
+    # Sunday - Thursday has 4 periods, Friday has only 3 periods
+    day_period_counts = {
+        "Sunday": 4,
+        "Monday": 4,
+        "Tuesday": 4,
+        "Wednesday": 4,
+        "Thursday": 4,
+        "Friday": 3
+    }
+
+    subjects = [
+        {"name": "Data Structures", "weekly_periods": 4, "teacher_name": "Bashanta", "free_time_start": "10:00 AM", "free_time_end": "03:00 PM"},
+        {"name": "Linear Algebra", "weekly_periods": 4, "teacher_name": "Sita Rai", "free_time_start": "10:00 AM", "free_time_end": "03:00 PM"},
+        {"name": "Microprocessor", "weekly_periods": 4, "teacher_name": "Hari Thapa", "free_time_start": "10:00 AM", "free_time_end": "03:00 PM"},
+        {"name": "OOP in C++", "weekly_periods": 4, "teacher_name": "Ramesh Joshi", "free_time_start": "10:00 AM", "free_time_end": "03:00 PM"},
+        {"name": "Discrete Math", "weekly_periods": 3, "teacher_name": "Anita Shrestha", "free_time_start": "10:00 AM", "free_time_end": "03:00 PM"},
+    ]
+
+    result = generate_simple_wizard_routine(
+        db=db,
+        class_name=class_name,
+        days_list=days,
+        periods_list=periods,
+        subjects_list=subjects,
+        day_period_counts=day_period_counts
+    )
+
+    assert result["conflict_count"] == 0
+    assert len(result["entries"]) == 19
+    # Verify that Friday entries do not exceed 3 periods (Period 1, 2, 3)
+    friday_entries = [e for e in result["entries"] if e["day_name"] == "Friday"]
+    assert len(friday_entries) <= 3
+    for fe in friday_entries:
+        assert fe["period_name"] in ("Period 1", "Period 2", "Period 3")
+

@@ -84,64 +84,57 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Welcome Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-indigo-700 to-violet-800 p-8 text-white shadow-xl">
-          <div className="relative z-10 max-w-2xl space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-md">
-              <ShieldCheck className="h-4 w-4 text-emerald-300" />
-              <span>Academic Routine Management System</span>
+      <div className="space-y-5">
+        {/* Welcome Header */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                  College Routine Management System
+                </h1>
+                <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800 dark:text-emerald-300">
+                  MySQL XAMPP
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Dynamic routine scheduling with teacher availability windows, room allocation, and clash-free generation.
+              </p>
             </div>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-              Apex College Master Timetable & Optimization Center
-            </h1>
-            <p className="text-xs text-blue-100 sm:text-sm leading-relaxed">
-              Fully dynamic scheduling engine powered by Google OR-Tools CP-SAT. Supports custom working days, varying periods per day, teacher availability matrices, and zero-conflict generation.
-            </p>
-            <div className="flex flex-wrap items-center gap-3 pt-3">
+            <div className="flex items-center gap-2">
               <Link
                 href="/timetables"
-                className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-blue-700 shadow-md hover:bg-blue-50 transition-colors"
+                className="rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
               >
-                <CalendarCheck className="h-4 w-4" />
-                Open Interactive Master Routine
-              </Link>
-              <Link
-                href="/generator"
-                className="flex items-center gap-2 rounded-xl bg-blue-900/60 border border-white/20 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-900 transition-colors"
-              >
-                <Sparkles className="h-4 w-4 text-amber-300" />
-                Generate Candidate Solutions
+                Master Routine
               </Link>
             </div>
           </div>
-          {/* Decorative blur blob */}
-          <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-violet-500/20 blur-3xl pointer-events-none" />
         </div>
 
         {/* Mode Selector Tabs */}
         <div className="flex items-center gap-2 border-b border-slate-200 pb-2 dark:border-slate-800">
           <button
             onClick={() => setActiveTab("simple")}
-            className={`flex items-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer ${
               activeTab === "simple"
-                ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                ? "bg-blue-600 text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
             <Sparkles className="h-4 w-4" />
-            Quick Simple Routine Builder
+            Simple Routine Builder
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className={`flex items-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer ${
               activeTab === "analytics"
-                ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                ? "bg-blue-600 text-white"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
             }`}
           >
             <BarChart3 className="h-4 w-4" />
-            Master Campus Analytics & KPIs
+            Campus Overview & Analytics
           </button>
         </div>
 
@@ -150,12 +143,12 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* KPI Cards Grid */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {kpis.map((kpi, idx) => (
                 <Link
                   key={idx}
                   href={kpi.link}
-                  className="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition-all dark:border-slate-800 dark:bg-slate-900"
+                  className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs hover:border-blue-400 transition-all dark:border-slate-800 dark:bg-slate-900"
                 >
               <div className="flex items-center justify-between">
                 <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr ${kpi.color} text-white shadow-sm`}>

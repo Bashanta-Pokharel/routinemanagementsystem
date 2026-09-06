@@ -67,14 +67,17 @@ def generate_simple_wizard_routine(
     days_list: List[str],
     periods_list: List[Dict[str, Any]],
     subjects_list: List[Dict[str, Any]],
-    routine_title: Optional[str] = None
+    routine_title: Optional[str] = None,
+    day_periods: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+    day_period_counts: Optional[Dict[str, int]] = None
 ) -> Dict[str, Any]:
     """
     Simpler, direct routine generator:
     1. Reads subjects and weekly required periods.
     2. Reads teachers with their free time intervals (e.g. Bashanta -> 1:00 PM to 3:00 PM).
-    3. Calculates conflict-free slot assignments matching teacher intervals.
-    4. Automatically saves/updates everything in the SQLite / PostgreSQL database.
+    3. Handles variable number of periods per day (e.g. 4 periods on Sun-Thu, 3 on Friday).
+    4. Calculates conflict-free slot assignments matching teacher intervals.
+    5. Automatically saves/updates everything in the MySQL / SQLite database.
     """
     # 1. Setup Base Academic Structure in Database
     campus = db.query(Campus).first()
@@ -143,14 +146,27 @@ def generate_simple_wizard_routine(
             db.flush()
         day_objs.append(d_record)
 
-    # 3. Setup Periods per Day
+    # 3. Setup Periods per Day (Supports variable periods per day)
     teaching_periods = []
     all_period_records = []
+    day_period_map = {}
 
     for day in day_objs:
         # Clear previous periods on this day if setting up fresh
         db.query(Period).filter(Period.day_id == day.id).delete()
-        for p_idx, p_info in enumerate(periods_list):
+        
+        # Determine periods for this specific day
+        if day_periods and day.name in day_periods:
+            cur_periods_list = day_periods[day.name]
+        elif day_period_counts and day.name in day_period_counts:
+            count = day_period_counts[day.name]
+            cur_periods_list = periods_list[:count]
+        else:
+            cur_periods_list = periods_list
+
+        day_period_map[day.name] = []
+
+        for p_idx, p_info in enumerate(cur_periods_list):
             p_rec = Period(
                 day_id=day.id,
                 name=p_info.get("name", f"Period {p_idx + 1}"),
@@ -162,6 +178,7 @@ def generate_simple_wizard_routine(
             db.add(p_rec)
             db.flush()
             all_period_records.append(p_rec)
+            day_period_map[day.name].append(p_rec)
             if p_rec.period_type == "Teaching":
                 teaching_periods.append(p_rec)
 
@@ -362,5 +379,12 @@ def generate_simple_wizard_routine(
         "conflict_count": 0,
         "entries": scheduled_entries,
         "days": [{"id": d.id, "name": d.name, "short_code": d.short_code} for d in day_objs],
-        "periods": [{"id": p.id, "name": p.name, "start_time": p.start_time, "end_time": p.end_time, "type": p.period_type} for p in all_period_records if p.day_id == day_objs[0].id]
+        "periods": [{"id": p.id, "name": p.name, "start_time": p.start_time, "end_time": p.end_time, "type": p.period_type} for p in (day_period_map.get(day_objs[0].name, []) if day_objs else [])],
+        "day_periods": {
+            d.name: [
+                {"id": p.id, "name": p.name, "start_time": p.start_time, "end_time": p.end_time, "type": p.period_type}
+                for p in day_period_map.get(d.name, [])
+            ]
+            for d in day_objs
+        }
     }
