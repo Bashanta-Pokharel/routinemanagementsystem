@@ -4,15 +4,20 @@ import React, { useState } from "react";
 import { 
   Sparkles, Plus, Trash2, Clock, Calendar, CheckCircle2, 
   Printer, Download, ArrowRight, User, BookOpen, Layers, Coffee, Zap,
-  RotateCcw, ShieldCheck, Check, AlertCircle
+  RotateCcw, ShieldCheck, Check, AlertCircle, Eye, FileSpreadsheet, LayoutGrid
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { fetchApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { CampusRoutineSheet } from "@/components/CampusRoutineSheet";
+import { LiveWatchModal } from "@/components/LiveWatchModal";
+import Link from "next/link";
 
 interface TeacherItem {
   id: string;
   name: string;
+  abbreviation: string;
+  contact: string;
   speciality: string;
   free_time_start: string;
   free_time_end: string;
@@ -23,6 +28,7 @@ interface SubjectItem {
   id: string;
   name: string;
   code?: string;
+  course_type?: "TH" | "PR" | "TU";
   weekly_periods: number;
   teacher_name: string;
 }
@@ -42,48 +48,60 @@ export function SimpleRoutineWizard() {
   const [resetMessage, setResetMessage] = useState<string | null>(null);
 
   // Routine Meta
+  const [campusName, setCampusName] = useState("Ratna Rajyalaxmi Campus");
+  const [campusAddress, setCampusAddress] = useState("Pradarshanimarga, Kathmandu Nepal");
   const [routineTitle, setRoutineTitle] = useState("BCA Academic Routine 2026");
 
-  // Step 1: Faculty / Teachers with Specialty and Available Time
+  // Step 1: Faculty / Teachers with Specialty, Abbreviation, Contact and Free Time
   const [teachers, setTeachers] = useState<TeacherItem[]>([
     {
       id: "t1",
-      name: "Bashanta",
-      speciality: "C Programming, Data Structures, OOP Java",
-      free_time_start: "01:00 PM",
-      free_time_end: "03:30 PM",
+      name: "Bhupendra Ram Luhar",
+      abbreviation: "BRL",
+      contact: "9848811584",
+      speciality: "Microprocessor & Comp Architecture",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
       max_classes_per_day: 4,
     },
     {
       id: "t2",
-      name: "Prof. Sita Rai",
-      speciality: "Calculus, Numerical Methods, Statistics",
-      free_time_start: "10:00 AM",
-      free_time_end: "01:30 PM",
+      name: "Shree krishna Maharjan",
+      abbreviation: "SKM",
+      contact: "9841299009",
+      speciality: "Discrete Structure",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
       max_classes_per_day: 4,
     },
     {
       id: "t3",
-      name: "Er. Hari Thapa",
-      speciality: "Digital Logic Systems, Computer Architecture",
-      free_time_start: "10:00 AM",
-      free_time_end: "03:30 PM",
+      name: "Ananda KC",
+      abbreviation: "AK",
+      contact: "9851223176",
+      speciality: "OOP in Java",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
       max_classes_per_day: 4,
     },
     {
       id: "t4",
-      name: "Ramesh Joshi",
-      speciality: "Computer Fundamentals, DBMS, Web Tech",
-      free_time_start: "10:00 AM",
-      free_time_end: "03:30 PM",
+      name: "Sharmila Bhattarai",
+      abbreviation: "SB",
+      contact: "9844638055",
+      speciality: "Statistics",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
       max_classes_per_day: 4,
     },
     {
       id: "t5",
-      name: "Anita Shrestha",
-      speciality: "Society and Technology, Technical Writing",
-      free_time_start: "10:00 AM",
-      free_time_end: "03:30 PM",
+      name: "Bijaya Mishra",
+      abbreviation: "BM",
+      contact: "9841695609",
+      speciality: "Web Technology",
+      free_time_start: "06:30 AM",
+      free_time_end: "10:30 AM",
       max_classes_per_day: 4,
     },
   ]);
@@ -97,11 +115,11 @@ export function SimpleRoutineWizard() {
       room_name: "Room 101",
       is_active: true,
       subjects: [
-        { id: "s1_1", name: "C Programming", code: "CACS101", weekly_periods: 4, teacher_name: "Bashanta" },
-        { id: "s1_2", name: "Mathematics I (Calculus)", code: "CACS102", weekly_periods: 4, teacher_name: "Prof. Sita Rai" },
-        { id: "s1_3", name: "Digital Logic Systems", code: "CACS103", weekly_periods: 4, teacher_name: "Er. Hari Thapa" },
-        { id: "s1_4", name: "Computer Fundamentals", code: "CACS104", weekly_periods: 4, teacher_name: "Ramesh Joshi" },
-        { id: "s1_5", name: "Society and Technology", code: "CACS105", weekly_periods: 3, teacher_name: "Anita Shrestha" },
+        { id: "s1_1", name: "C Programming", code: "CACS101", course_type: "TH", weekly_periods: 4, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s1_2", name: "Digital Logic Systems", code: "CACS102", course_type: "TH", weekly_periods: 4, teacher_name: "Shree krishna Maharjan" },
+        { id: "s1_3", name: "Mathematics I", code: "CACS103", course_type: "TH", weekly_periods: 4, teacher_name: "Sharmila Bhattarai" },
+        { id: "s1_4", name: "Computer Fundamentals", code: "CACS104", course_type: "TH", weekly_periods: 4, teacher_name: "Bijaya Mishra" },
+        { id: "s1_5", name: "C Programming Lab", code: "CACS105", course_type: "PR", weekly_periods: 3, teacher_name: "Bhupendra Ram Luhar" },
       ]
     },
     {
@@ -119,10 +137,10 @@ export function SimpleRoutineWizard() {
       room_name: "Room 103",
       is_active: true,
       subjects: [
-        { id: "s3_1", name: "Data Structures & Algorithms", code: "CACS201", weekly_periods: 4, teacher_name: "Bashanta" },
-        { id: "s3_2", name: "Numerical Methods", code: "CACS202", weekly_periods: 4, teacher_name: "Prof. Sita Rai" },
-        { id: "s3_3", name: "Computer Architecture", code: "CACS203", weekly_periods: 4, teacher_name: "Er. Hari Thapa" },
-        { id: "s3_4", name: "Database Management System", code: "CACS204", weekly_periods: 4, teacher_name: "Ramesh Joshi" },
+        { id: "s3_1", name: "OOP in Java", code: "CACS201", course_type: "TH", weekly_periods: 4, teacher_name: "Ananda KC" },
+        { id: "s3_2", name: "Discrete Structure", code: "CACS202", course_type: "TH", weekly_periods: 4, teacher_name: "Shree krishna Maharjan" },
+        { id: "s3_3", name: "Data Structures & Algorithms", code: "CACS203", course_type: "TH", weekly_periods: 4, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s3_4", name: "Web Technology", code: "CACS204", course_type: "TH", weekly_periods: 4, teacher_name: "Bijaya Mishra" },
       ]
     },
     {
@@ -138,8 +156,13 @@ export function SimpleRoutineWizard() {
       semester_name: "BCA 5th Semester",
       section_name: "BCA 5th Sem",
       room_name: "Room 105",
-      is_active: false,
-      subjects: []
+      is_active: true,
+      subjects: [
+        { id: "s5_1", name: "Microprocessor & Comp Architecture", code: "CACS301", course_type: "TH", weekly_periods: 4, teacher_name: "Bhupendra Ram Luhar" },
+        { id: "s5_2", name: "Numerical Methods", code: "CACS302", course_type: "TH", weekly_periods: 4, teacher_name: "Sharmila Bhattarai" },
+        { id: "s5_3", name: "Software Engineering", code: "CACS303", course_type: "TH", weekly_periods: 4, teacher_name: "Ananda KC" },
+        { id: "s5_4", name: "Computer Networks", code: "CACS304", course_type: "TH", weekly_periods: 4, teacher_name: "Shree krishna Maharjan" },
+      ]
     },
     {
       semester_number: 6,
@@ -167,18 +190,18 @@ export function SimpleRoutineWizard() {
     }
   ]);
 
-  // Step 4: Days and Periods
+  // Step 4: Days and Periods matching morning campus schedule
   const [selectedDays, setSelectedDays] = useState<string[]>([
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"
   ]);
 
   const [periods, setPeriods] = useState([
-    { name: "Period 1", start_time: "10:00 AM", end_time: "11:00 AM", type: "Teaching" },
-    { name: "Period 2", start_time: "11:00 AM", end_time: "12:00 PM", type: "Teaching" },
-    { name: "Break", start_time: "12:00 PM", end_time: "12:30 PM", type: "Break" },
-    { name: "Period 3", start_time: "12:30 PM", end_time: "01:30 PM", type: "Teaching" },
-    { name: "Period 4", start_time: "01:30 PM", end_time: "02:30 PM", type: "Teaching" },
-    { name: "Period 5", start_time: "02:30 PM", end_time: "03:30 PM", type: "Teaching" },
+    { name: "Period 1", start_time: "06:30 AM", end_time: "07:15 AM", type: "Teaching" },
+    { name: "Period 2", start_time: "07:15 AM", end_time: "08:00 AM", type: "Teaching" },
+    { name: "Period 3", start_time: "08:00 AM", end_time: "08:45 AM", type: "Teaching" },
+    { name: "Break", start_time: "08:45 AM", end_time: "09:05 AM", type: "Break" },
+    { name: "Period 4", start_time: "09:05 AM", end_time: "09:50 AM", type: "Teaching" },
+    { name: "Period 5", start_time: "09:50 AM", end_time: "10:30 AM", type: "Teaching" },
   ]);
 
   const [dayPeriodCounts, setDayPeriodCounts] = useState<Record<string, number>>({
@@ -187,8 +210,8 @@ export function SimpleRoutineWizard() {
     "Tuesday": 6,
     "Wednesday": 6,
     "Thursday": 6,
-    "Friday": 4,
-    "Saturday": 4,
+    "Friday": 6,
+    "Saturday": 6,
   });
 
   // State for generation result
@@ -197,8 +220,19 @@ export function SimpleRoutineWizard() {
   const [error, setError] = useState<string | null>(null);
   const [selectedSemesterTab, setSelectedSemesterTab] = useState<string>("");
   const [selectedTeacherTab, setSelectedTeacherTab] = useState<string>("");
+  const [activeViewMode, setActiveViewMode] = useState<"sheet" | "table" | "teacher">("sheet");
+  const [isLiveWatchOpen, setIsLiveWatchOpen] = useState(false);
 
   const allAvailableDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  // Helper auto-abbreviation
+  const autoAbbrev = (name: string) => {
+    return name
+      .replace(/^(prof\.|dr\.|er\.|mr\.|mrs\.|ms\.)\s+/i, "")
+      .split(/\s+/)
+      .map(w => w[0]?.toUpperCase() || "")
+      .join("");
+  };
 
   // Handlers for Clean Reset
   const handleCleanResetDatabase = async () => {
@@ -228,14 +262,17 @@ export function SimpleRoutineWizard() {
   // Teacher Handlers
   const handleAddTeacher = () => {
     const newIdx = teachers.length + 1;
+    const defaultName = `Faculty Member ${newIdx}`;
     setTeachers([
       ...teachers,
       {
         id: `t_${Date.now()}`,
-        name: `Teacher ${newIdx}`,
+        name: defaultName,
+        abbreviation: `T${newIdx}`,
+        contact: "98XXXXXXXX",
         speciality: "Computer Science",
-        free_time_start: "10:00 AM",
-        free_time_end: "03:30 PM",
+        free_time_start: "06:30 AM",
+        free_time_end: "10:30 AM",
         max_classes_per_day: 4,
       }
     ]);
@@ -246,7 +283,14 @@ export function SimpleRoutineWizard() {
   };
 
   const handleUpdateTeacher = (id: string, field: keyof TeacherItem, value: any) => {
-    setTeachers(teachers.map(t => t.id === id ? { ...t, [field]: value } : t));
+    setTeachers(teachers.map(t => {
+      if (t.id !== id) return t;
+      const updated = { ...t, [field]: value };
+      if (field === "name" && (!t.abbreviation || t.abbreviation.startsWith("T"))) {
+        updated.abbreviation = autoAbbrev(value);
+      }
+      return updated;
+    }));
   };
 
   // Semester & Subject Handlers
@@ -263,11 +307,12 @@ export function SimpleRoutineWizard() {
     setSemesters(semesters.map(s => {
       if (s.semester_number === semNum) {
         const subCount = s.subjects.length + 1;
-        const defaultTeacher = teachers.length > 0 ? teachers[0].name : "Teacher";
+        const defaultTeacher = teachers.length > 0 ? teachers[0].name : "Faculty";
         const newSub: SubjectItem = {
           id: `s_${semNum}_${Date.now()}`,
           name: `Subject ${subCount}`,
           code: `CACS${semNum}0${subCount}`,
+          course_type: "TH",
           weekly_periods: 4,
           teacher_name: defaultTeacher
         };
@@ -347,11 +392,16 @@ export function SimpleRoutineWizard() {
     try {
       const payload = {
         routine_title: routineTitle,
+        campus_name: campusName,
+        address: campusAddress,
         days: selectedDays,
         periods: periods,
         day_period_counts: dayPeriodCounts,
         teachers: teachers.map(t => ({
           name: t.name,
+          abbreviation: t.abbreviation || autoAbbrev(t.name),
+          contact: t.contact || undefined,
+          phone: t.contact || undefined,
           speciality: t.speciality,
           free_time_start: t.free_time_start,
           free_time_end: t.free_time_end,
@@ -366,6 +416,7 @@ export function SimpleRoutineWizard() {
           subjects: s.subjects.map(sub => ({
             name: sub.name,
             code: sub.code,
+            course_type: sub.course_type || "TH",
             weekly_periods: sub.weekly_periods,
             teacher_name: sub.teacher_name
           }))
@@ -402,38 +453,45 @@ export function SimpleRoutineWizard() {
   const activeSemesters = semesters.filter(s => s.is_active);
 
   return (
-    <div className="space-y-5">
-      {/* Top Banner with Quick Actions */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6">
+      {/* Top Banner with Clean Neutral Styling */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
                 BCA Multi-Semester Routine Generator
               </h2>
-              <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300">
-                Cross-Semester Clash-Free
+              <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-800 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200">
+                Clash-Free Multi-Semester
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-              Configure teachers with their subject speciality and available hours. Run multiple BCA semesters at once &mdash; teachers teaching across multiple semesters will never have conflicting classes.
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+              Define faculty members with their abbreviation (e.g. <span className="font-semibold text-zinc-700 dark:text-zinc-300">[BRL]</span>), contact phone, and time windows. Generates standard campus-formatted routines with TH/PR/TU badges and instant live routine streaming.
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Link
+              href="/live-watch"
+              className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 transition-colors"
+            >
+              <Eye className="h-3.5 w-3.5 text-emerald-600" />
+              Live Routine Watch
+            </Link>
             <button
               type="button"
               onClick={handleCleanResetDatabase}
               disabled={resettingDb}
-              className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300 cursor-pointer transition-colors"
-              title="Delete all previous default and mock data from MySQL"
+              className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300 cursor-pointer transition-colors"
+              title="Delete all previous mock data and reset DB"
             >
               <RotateCcw className={cn("h-3.5 w-3.5", resettingDb && "animate-spin")} />
-              {resettingDb ? "Clearing..." : "Clean Reset DB"}
+              {resettingDb ? "Resetting..." : "Clean Reset DB"}
             </button>
             <button
               type="button"
               onClick={handleClearAllFields}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer"
             >
               Clear Form
             </button>
@@ -441,7 +499,7 @@ export function SimpleRoutineWizard() {
         </div>
 
         {resetMessage && (
-          <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 p-2.5 text-xs font-semibold text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800 dark:text-emerald-300">
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 p-2.5 text-xs font-semibold text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
             {resetMessage}
           </div>
@@ -449,28 +507,68 @@ export function SimpleRoutineWizard() {
       </div>
 
       {/* Routine Configuration Card */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-6">
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-6">
         
+        {/* Campus Header Configuration */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 border-b border-zinc-100 pb-5 dark:border-zinc-800">
+          <div>
+            <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 uppercase mb-1">
+              Campus / Institution Name
+            </label>
+            <input
+              type="text"
+              value={campusName}
+              onChange={(e) => setCampusName(e.target.value)}
+              placeholder="e.g. Ratna Rajyalaxmi Campus"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 uppercase mb-1">
+              Campus Address / Location
+            </label>
+            <input
+              type="text"
+              value={campusAddress}
+              onChange={(e) => setCampusAddress(e.target.value)}
+              placeholder="e.g. Pradarshanimarga, Kathmandu Nepal"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 uppercase mb-1">
+              Routine Title
+            </label>
+            <input
+              type="text"
+              value={routineTitle}
+              onChange={(e) => setRoutineTitle(e.target.value)}
+              placeholder="e.g. BCA Academic Routine 2026"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+            />
+          </div>
+        </div>
+
         {/* Step 1: Faculty / Teachers Management */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-slate-800">
+          <div className="flex items-center justify-between border-b border-zinc-100 pb-2 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xs">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white font-bold text-xs dark:bg-zinc-100 dark:text-zinc-900">
                 1
               </span>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Faculty Members, Subject Speciality & Free-Time Windows
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Faculty Members, Abbreviation, Contact & Free-Time Windows
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Define teachers and when they are available in the day (e.g. 01:00 PM &ndash; 03:30 PM). A teacher can teach subjects in multiple semesters.
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  Provide teacher abbreviation (e.g. [BRL]) and phone numbers for the campus directory sheet.
                 </p>
               </div>
             </div>
             <button
               type="button"
               onClick={handleAddTeacher}
-              className="flex items-center gap-1 rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300 cursor-pointer"
+              className="flex items-center gap-1 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 cursor-pointer transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               Add Teacher
@@ -483,25 +581,56 @@ export function SimpleRoutineWizard() {
               return (
                 <div
                   key={t.id}
-                  className="grid grid-cols-1 gap-2.5 rounded-xl border border-slate-200 bg-slate-50/50 p-3 dark:border-slate-800 dark:bg-slate-800/40 sm:grid-cols-12 items-center"
+                  className="grid grid-cols-1 gap-2.5 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-800/40 sm:grid-cols-12 items-center"
                 >
                   {/* Teacher Name: 3 cols */}
                   <div className="sm:col-span-3">
-                    <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">
+                    <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                       Teacher Name ({idx + 1})
                     </label>
                     <input
                       type="text"
                       value={t.name}
                       onChange={(e) => handleUpdateTeacher(t.id, "name", e.target.value)}
-                      placeholder="e.g. Bashanta Pokharel"
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g. Bhupendra Ram Luhar"
+                      className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
                     />
                   </div>
 
-                  {/* Speciality: 4 cols */}
-                  <div className="sm:col-span-4">
-                    <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">
+                  {/* Abbreviation & Contact: 2 cols */}
+                  <div className="sm:col-span-2">
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                          Abbrev
+                        </label>
+                        <input
+                          type="text"
+                          value={t.abbreviation}
+                          onChange={(e) => handleUpdateTeacher(t.id, "abbreviation", e.target.value.toUpperCase())}
+                          placeholder="BRL"
+                          maxLength={5}
+                          className="w-full rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-xs font-bold text-zinc-900 text-center uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+                          Contact
+                        </label>
+                        <input
+                          type="text"
+                          value={t.contact}
+                          onChange={(e) => handleUpdateTeacher(t.id, "contact", e.target.value)}
+                          placeholder="9848811584"
+                          className="w-full rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Speciality: 3 cols */}
+                  <div className="sm:col-span-3">
+                    <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-1">
                       Subject Speciality / Skills
                     </label>
                     <input
@@ -509,18 +638,18 @@ export function SimpleRoutineWizard() {
                       value={t.speciality}
                       onChange={(e) => handleUpdateTeacher(t.id, "speciality", e.target.value)}
                       placeholder="e.g. C, Java, Data Structures"
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
                     />
                   </div>
 
-                  {/* Available Time Interval: 4 cols */}
-                  <div className="sm:col-span-4">
+                  {/* Available Time Interval: 3 cols */}
+                  <div className="sm:col-span-3">
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                        Free Time Window (From &ndash; To)
+                      <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+                        Free Time Window
                       </label>
                       {assignedLoad > 0 && (
-                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
                           {assignedLoad} hrs assigned
                         </span>
                       )}
@@ -530,16 +659,16 @@ export function SimpleRoutineWizard() {
                         type="text"
                         value={t.free_time_start}
                         onChange={(e) => handleUpdateTeacher(t.id, "free_time_start", e.target.value)}
-                        placeholder="10:00 AM"
-                        className="w-1/2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                        placeholder="06:30 AM"
+                        className="w-1/2 rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900 text-center"
                       />
-                      <span className="text-slate-400 text-xs font-bold">&ndash;</span>
+                      <span className="text-zinc-400 text-xs font-bold">&ndash;</span>
                       <input
                         type="text"
                         value={t.free_time_end}
                         onChange={(e) => handleUpdateTeacher(t.id, "free_time_end", e.target.value)}
-                        placeholder="03:30 PM"
-                        className="w-1/2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                        placeholder="10:30 AM"
+                        className="w-1/2 rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-zinc-900 text-center"
                       />
                     </div>
                   </div>
@@ -549,7 +678,7 @@ export function SimpleRoutineWizard() {
                     <button
                       type="button"
                       onClick={() => handleRemoveTeacher(t.id)}
-                      className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 cursor-pointer"
+                      className="rounded-lg p-1.5 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40 dark:hover:text-red-400 cursor-pointer"
                       title="Delete Teacher"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -563,16 +692,16 @@ export function SimpleRoutineWizard() {
 
         {/* Step 2: Running BCA Semesters Selection */}
         <div className="space-y-3">
-          <div className="border-b border-slate-100 pb-2 dark:border-slate-800">
+          <div className="border-b border-zinc-100 pb-2 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xs">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white font-bold text-xs dark:bg-zinc-100 dark:text-zinc-900">
                 2
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                 Select Running BCA Semesters
               </h3>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
               Choose which semesters are currently active. All selected semesters will be scheduled together with zero teacher collisions.
             </p>
           </div>
@@ -586,12 +715,12 @@ export function SimpleRoutineWizard() {
                 className={cn(
                   "flex flex-col items-center justify-center rounded-xl border p-2.5 transition-all text-center cursor-pointer",
                   sem.is_active
-                    ? "border-blue-600 bg-blue-50 text-blue-900 font-bold dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-200 ring-2 ring-blue-500/20"
-                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+                    ? "border-zinc-900 bg-zinc-900 text-white font-bold dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                    : "border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-400"
                 )}
               >
                 <span className="text-xs font-bold">Sem {sem.semester_number}</span>
-                <span className="text-[10px] opacity-70 mt-0.5">
+                <span className="text-[10px] opacity-80 mt-0.5">
                   {sem.is_active ? `Active (${sem.subjects.length} sub)` : "Inactive"}
                 </span>
               </button>
@@ -601,22 +730,22 @@ export function SimpleRoutineWizard() {
 
         {/* Step 3: Semester-Wise Subjects & Teacher Assignment */}
         <div className="space-y-4">
-          <div className="border-b border-slate-100 pb-2 dark:border-slate-800">
+          <div className="border-b border-zinc-100 pb-2 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xs">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white font-bold text-xs dark:bg-zinc-100 dark:text-zinc-900">
                 3
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Semester-Wise Subjects & Teacher Assignment
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                Semester-Wise Subjects, Course Type (TH/PR/TU) & Teacher Assignment
               </h3>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Add subjects under each running semester and select their assigned teacher.
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              Add subjects under each running semester and specify Theory (TH), Practical (PR) or Tutorial (TU).
             </p>
           </div>
 
           {activeSemesters.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+            <div className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
               No semesters selected. Please select one or more running BCA semesters in Step 2.
             </div>
           ) : (
@@ -624,14 +753,14 @@ export function SimpleRoutineWizard() {
               {activeSemesters.map((sem) => (
                 <div
                   key={sem.semester_number}
-                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-3"
+                  className="rounded-xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-3"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2 dark:border-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-2 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                      <span className="rounded-md bg-blue-600 px-2 py-0.5 text-xs font-bold text-white">
+                      <span className="rounded-md bg-zinc-900 px-2.5 py-0.5 text-xs font-bold text-white dark:bg-zinc-100 dark:text-zinc-900">
                         {sem.semester_name}
                       </span>
-                      <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-300">
                         <span>Room:</span>
                         <input
                           type="text"
@@ -641,14 +770,14 @@ export function SimpleRoutineWizard() {
                             setSemesters(semesters.map(s => s.semester_number === sem.semester_number ? { ...s, room_name: val } : s));
                           }}
                           placeholder="Room 101"
-                          className="w-24 rounded border border-slate-300 bg-white px-2 py-0.5 text-xs font-semibold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                          className="w-24 rounded border border-zinc-300 bg-white px-2 py-0.5 text-xs font-semibold text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                         />
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => handleAddSubjectToSemester(sem.semester_number)}
-                      className="flex items-center gap-1 rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 dark:bg-blue-950 dark:border-blue-800 dark:text-blue-300 cursor-pointer self-start sm:self-auto"
+                      className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer self-start sm:self-auto"
                     >
                       <Plus className="h-3.5 w-3.5" />
                       Add Subject to Sem {sem.semester_number}
@@ -656,7 +785,7 @@ export function SimpleRoutineWizard() {
                   </div>
 
                   {sem.subjects.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-2">
+                    <p className="text-xs text-zinc-400 italic py-2">
                       No subjects added yet. Click &quot;Add Subject&quot; above to add courses for {sem.semester_name}.
                     </p>
                   ) : (
@@ -666,11 +795,11 @@ export function SimpleRoutineWizard() {
                         return (
                           <div
                             key={sub.id}
-                            className="grid grid-cols-1 gap-2 rounded-lg border border-slate-200 bg-slate-50/70 p-2.5 dark:border-slate-800 dark:bg-slate-800/40 sm:grid-cols-12 items-center"
+                            className="grid grid-cols-1 gap-2 rounded-lg border border-zinc-200 bg-zinc-50/70 p-2.5 dark:border-zinc-800 dark:bg-zinc-800/40 sm:grid-cols-12 items-center"
                           >
                             {/* Subject Name: 4 cols */}
                             <div className="sm:col-span-4">
-                              <label className="block text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-0.5">
+                              <label className="block text-[9px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">
                                 Subject Name ({sIdx + 1})
                               </label>
                               <input
@@ -678,27 +807,29 @@ export function SimpleRoutineWizard() {
                                 value={sub.name}
                                 onChange={(e) => handleUpdateSubject(sem.semester_number, sub.id, "name", e.target.value)}
                                 placeholder="e.g. C Programming"
-                                className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                               />
                             </div>
 
-                            {/* Subject Code: 2 cols */}
+                            {/* Type (TH/PR/TU): 2 cols */}
                             <div className="sm:col-span-2">
-                              <label className="block text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-0.5">
-                                Code
+                              <label className="block text-[9px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">
+                                Type
                               </label>
-                              <input
-                                type="text"
-                                value={sub.code || ""}
-                                onChange={(e) => handleUpdateSubject(sem.semester_number, sub.id, "code", e.target.value)}
-                                placeholder="CACS101"
-                                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                              />
+                              <select
+                                value={sub.course_type || "TH"}
+                                onChange={(e) => handleUpdateSubject(sem.semester_number, sub.id, "course_type", e.target.value as any)}
+                                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-bold text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                              >
+                                <option value="TH">[TH] Theory</option>
+                                <option value="PR">[PR] Practical</option>
+                                <option value="TU">[TU] Tutorial</option>
+                              </select>
                             </div>
 
                             {/* Weekly Periods: 2 cols */}
                             <div className="sm:col-span-2">
-                              <label className="block text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-0.5 text-center">
+                              <label className="block text-[9px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5 text-center">
                                 Periods/Wk
                               </label>
                               <input
@@ -707,23 +838,23 @@ export function SimpleRoutineWizard() {
                                 max="10"
                                 value={sub.weekly_periods}
                                 onChange={(e) => handleUpdateSubject(sem.semester_number, sub.id, "weekly_periods", parseInt(e.target.value) || 1)}
-                                className="w-full rounded-md border border-slate-300 bg-white px-1.5 py-1 text-xs font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white text-center"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-1.5 py-1 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white text-center"
                               />
                             </div>
 
                             {/* Assigned Teacher: 3 cols */}
                             <div className="sm:col-span-3">
-                              <label className="block text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase mb-0.5">
-                                Assigned Teacher
+                              <label className="block text-[9px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase mb-0.5">
+                                Assigned Faculty
                               </label>
                               <select
                                 value={sub.teacher_name}
                                 onChange={(e) => handleUpdateSubject(sem.semester_number, sub.id, "teacher_name", e.target.value)}
-                                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                className="w-full rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs font-medium text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
                               >
                                 {teachers.map((t) => (
                                   <option key={t.id} value={t.name}>
-                                    {t.name} ({t.free_time_start} - {t.free_time_end})
+                                    {t.name} [{t.abbreviation || autoAbbrev(t.name)}]
                                   </option>
                                 ))}
                                 {!teachers.some(t => t.name === sub.teacher_name) && (
@@ -731,8 +862,8 @@ export function SimpleRoutineWizard() {
                                 )}
                               </select>
                               {matchedTeacher && (
-                                <span className="block text-[9px] text-slate-400 truncate mt-0.5">
-                                  {matchedTeacher.speciality}
+                                <span className="block text-[9px] text-zinc-500 truncate mt-0.5">
+                                  {matchedTeacher.contact ? `Tel: ${matchedTeacher.contact}` : matchedTeacher.speciality}
                                 </span>
                               )}
                             </div>
@@ -742,7 +873,7 @@ export function SimpleRoutineWizard() {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveSubject(sem.semester_number, sub.id)}
-                                className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 cursor-pointer"
+                                className="rounded p-1 text-zinc-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 cursor-pointer"
                                 title="Remove Subject"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -761,23 +892,23 @@ export function SimpleRoutineWizard() {
 
         {/* Step 4: Working Days & Dynamic Daily Periods */}
         <div className="space-y-3">
-          <div className="border-b border-slate-100 pb-2 dark:border-slate-800">
+          <div className="border-b border-zinc-100 pb-2 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xs">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-900 text-white font-bold text-xs dark:bg-zinc-100 dark:text-zinc-900">
                 4
               </span>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Working Days & Daily Periods Configuration
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                Working Days & Morning Periods Configuration
               </h3>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Set which days the campus runs and customize the number of periods on specific days (e.g. 5 periods Sun-Thu, 3 periods on Friday).
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              Set which days the campus runs and review the period timings (including the 20-min Interval).
             </p>
           </div>
 
           {/* Active Days */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
               Active Working Days:
             </label>
             <div className="flex flex-wrap gap-2">
@@ -791,8 +922,8 @@ export function SimpleRoutineWizard() {
                     className={cn(
                       "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer",
                       isSelected
-                        ? "bg-blue-600 text-white shadow-xs"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400"
+                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                        : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400"
                     )}
                   >
                     {day}
@@ -810,13 +941,13 @@ export function SimpleRoutineWizard() {
                 className={cn(
                   "flex flex-col justify-between rounded-lg border p-2 text-xs",
                   p.type === "Break"
-                    ? "border-amber-200 bg-amber-50/80 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
-                    : "border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                    ? "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                    : "border-zinc-200 bg-zinc-50/70 text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-100"
                 )}
               >
                 <div>
                   <div className="font-bold">{p.name}</div>
-                  <div className="text-[10px] opacity-80 mt-0.5">
+                  <div className="text-[10px] opacity-80 mt-0.5 font-medium">
                     {p.start_time} &ndash; {p.end_time}
                   </div>
                 </div>
@@ -826,52 +957,11 @@ export function SimpleRoutineWizard() {
               </div>
             ))}
           </div>
-
-          {/* Per-Day Period Adjustment */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-800/40">
-            <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2">
-              Set Periods Count Per Day (Variable Days):
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              {selectedDays.map((day) => {
-                const count = dayPeriodCounts[day] || periods.length;
-                return (
-                  <div
-                    key={day}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-800"
-                  >
-                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">{day}:</span>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handlePeriodCountChange(day, count - 1)}
-                        className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 text-xs font-bold cursor-pointer"
-                        title="Decrease periods"
-                      >
-                        -
-                      </button>
-                      <span className="text-xs font-bold text-blue-600 dark:text-blue-400 w-3 text-center">
-                        {count}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handlePeriodCountChange(day, count + 1)}
-                        className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-200 text-xs font-bold cursor-pointer"
-                        title="Increase periods"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
         {/* Generate Button */}
         {error && (
-          <div className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-800 border border-red-200 dark:bg-red-950/50 dark:border-red-800 dark:text-red-300">
+          <div className="flex items-center gap-2 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-800 border border-red-200 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300">
             <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
             <span>{error}</span>
           </div>
@@ -881,7 +971,7 @@ export function SimpleRoutineWizard() {
           type="button"
           onClick={handleCalculateRoutine}
           disabled={isGenerating}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-sm font-bold text-white shadow-md hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 cursor-pointer transition-all"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 py-3.5 text-sm font-bold text-white shadow-sm hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 disabled:opacity-50 cursor-pointer transition-all"
         >
           <Sparkles className={cn("h-4 w-4", isGenerating && "animate-spin")} />
           {isGenerating ? "Calculating Clash-Free Schedule..." : "⚡ Generate BCA Multi-Semester Routine"}
@@ -890,298 +980,405 @@ export function SimpleRoutineWizard() {
 
       {/* Routine Display Section */}
       {generatedRoutine && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 space-y-4 print:p-0 print:border-none print:shadow-none">
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-5 print:p-0 print:border-none print:shadow-none">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-200 pb-4 dark:border-zinc-800">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                <h3 className="text-lg font-black text-zinc-900 dark:text-white">
                   {generatedRoutine.name || "BCA College Timetable"}
                 </h3>
-                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800 dark:text-emerald-300">
+                <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300">
                   <Check className="h-3 w-3" />
                   0 Conflicts (Clash-Free)
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-zinc-500 mt-1">
                 Optimization Score: {generatedRoutine.score}% &bull; Total Scheduled Classes: {generatedRoutine.total_classes}
               </p>
             </div>
-            <div className="flex items-center gap-2 print:hidden">
+            <div className="flex flex-wrap items-center gap-2 print:hidden">
+              <button
+                type="button"
+                onClick={() => setIsLiveWatchOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 cursor-pointer transition-colors shadow-xs"
+              >
+                <Eye className="h-3.5 w-3.5 text-emerald-600" />
+                Live Watch Routine
+              </button>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer shadow-xs"
               >
                 <Printer className="h-3.5 w-3.5" />
-                Print Routine
+                Print
               </button>
               <a
                 href={`/api/timetable/${generatedRoutine.timetable_id}/export/excel`}
                 download
-                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 cursor-pointer shadow-xs"
               >
                 <Download className="h-3.5 w-3.5" />
                 Export Excel
               </a>
+              <a
+                href={`/api/timetable/${generatedRoutine.timetable_id}/export/pdf`}
+                download
+                className="flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer shadow-xs"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export PDF
+              </a>
             </div>
           </div>
 
-          {/* View Mode Tabs: Semesters vs Teachers */}
-          <div className="space-y-4">
-            {/* Semester Tabs */}
-            <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200 pb-2 dark:border-slate-800 print:hidden">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1">
-                Semester View:
-              </span>
-              {Object.keys(generatedRoutine.semester_routines || {}).map((secName) => (
-                <button
-                  key={secName}
-                  onClick={() => {
-                    setSelectedSemesterTab(secName);
-                    setSelectedTeacherTab("");
-                  }}
-                  className={cn(
-                    "rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer",
-                    selectedSemesterTab === secName && !selectedTeacherTab
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
-                  )}
-                >
-                  {secName}
-                </button>
-              ))}
-
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-3 mr-1">
-                Teacher View:
-              </span>
-              {Object.keys(generatedRoutine.teacher_routines || {}).map((tName) => (
-                <button
-                  key={tName}
-                  onClick={() => {
-                    setSelectedTeacherTab(tName);
-                    setSelectedSemesterTab("");
-                  }}
-                  className={cn(
-                    "rounded-lg px-3 py-1 text-xs font-bold transition-colors cursor-pointer",
-                    selectedTeacherTab === tName
-                      ? "bg-purple-600 text-white shadow-xs"
-                      : "bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/50 dark:text-purple-300"
-                  )}
-                >
-                  {tName}
-                </button>
-              ))}
+          {/* View Mode Controls: Campus Sheet vs Interactive Table vs Teacher Schedule */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-800 print:hidden">
+            {/* View Mode Tabs */}
+            <div className="flex items-center gap-1 bg-zinc-100 p-1 rounded-lg dark:bg-zinc-800">
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("sheet")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition-all cursor-pointer",
+                  activeViewMode === "sheet"
+                    ? "bg-white text-zinc-900 shadow-xs dark:bg-zinc-900 dark:text-white"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400"
+                )}
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                Campus Sheet Format
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("table")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition-all cursor-pointer",
+                  activeViewMode === "table"
+                    ? "bg-white text-zinc-900 shadow-xs dark:bg-zinc-900 dark:text-white"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400"
+                )}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                Interactive Matrix
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveViewMode("teacher")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-bold transition-all cursor-pointer",
+                  activeViewMode === "teacher"
+                    ? "bg-white text-zinc-900 shadow-xs dark:bg-zinc-900 dark:text-white"
+                    : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400"
+                )}
+              >
+                <User className="h-3.5 w-3.5" />
+                Faculty Schedules
+              </button>
             </div>
 
-            {/* Semester Table Display */}
-            {selectedSemesterTab && generatedRoutine.semester_routines[selectedSemesterTab] && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Weekly Schedule &mdash; {selectedSemesterTab} ({generatedRoutine.semester_routines[selectedSemesterTab].room_number})
-                  </h4>
-                  <span className="text-xs text-slate-500">
-                    Room: {generatedRoutine.semester_routines[selectedSemesterTab].room_number}
-                  </span>
+            {/* Semester Filter Selector */}
+            {activeViewMode !== "teacher" && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                  Semester:
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {Object.keys(generatedRoutine.semester_routines || {}).map((secName) => (
+                    <button
+                      key={secName}
+                      onClick={() => setSelectedSemesterTab(secName)}
+                      className={cn(
+                        "rounded-lg px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer",
+                        selectedSemesterTab === secName
+                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                          : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
+                      )}
+                    >
+                      {secName}
+                    </button>
+                  ))}
                 </div>
+              </div>
+            )}
 
-                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                  <table className="w-full text-center text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-blue-600 text-white dark:bg-blue-900">
-                        <th className="border border-blue-500 p-2 font-bold w-24">Day</th>
-                        {periods.map((p, idx) => (
-                          <th key={idx} className="border border-blue-500 p-2 font-bold min-w-[120px]">
-                            {p.name}
-                            <div className="text-[10px] font-normal opacity-80 mt-0.5">
-                              {p.start_time} - {p.end_time}
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {generatedRoutine.days.map((day: any) => {
-                        const dayActiveCount = dayPeriodCounts[day.name] || periods.length;
-                        const secEntries = generatedRoutine.semester_routines[selectedSemesterTab].entries;
+            {/* Teacher Filter Selector */}
+            {activeViewMode === "teacher" && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400">
+                  Faculty:
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {Object.keys(generatedRoutine.teacher_routines || {}).map((tName) => (
+                    <button
+                      key={tName}
+                      onClick={() => setSelectedTeacherTab(tName)}
+                      className={cn(
+                        "rounded-lg px-2.5 py-1 text-xs font-bold transition-colors cursor-pointer",
+                        selectedTeacherTab === tName
+                          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
+                          : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300"
+                      )}
+                    >
+                      {tName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-                        return (
-                          <tr key={day.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <td className="border border-slate-200 bg-slate-100 p-2 font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                              {day.name}
-                            </td>
-                            {periods.map((p, pIdx) => {
-                              if (pIdx >= dayActiveCount) {
-                                return (
-                                  <td
-                                    key={pIdx}
-                                    className="border border-slate-200 bg-slate-100/50 p-2 text-slate-400 dark:border-slate-800 dark:bg-slate-800/30"
-                                  >
-                                    -
-                                  </td>
-                                );
-                              }
+          {/* Render Active View Mode */}
+          {activeViewMode === "sheet" && selectedSemesterTab && generatedRoutine.semester_routines[selectedSemesterTab] && (
+            <div className="space-y-3">
+              <CampusRoutineSheet
+                campusName={generatedRoutine.campus_name || campusName}
+                address={generatedRoutine.address || campusAddress}
+                programName="Bachelors in Computer Applications (BCA)"
+                semesterName={selectedSemesterTab.toUpperCase()}
+                sectionName={generatedRoutine.semester_routines[selectedSemesterTab].section_name || "A"}
+                roomNumber={generatedRoutine.semester_routines[selectedSemesterTab].room_number || "101"}
+                title="Daily Class Routine"
+                days={generatedRoutine.days || []}
+                periods={generatedRoutine.periods || periods}
+                entries={generatedRoutine.semester_routines[selectedSemesterTab].entries || []}
+                teacherDirectory={generatedRoutine.teacher_directory || []}
+                legend={generatedRoutine.legend || { TH: "Theory", TU: "Tutorial", PR: "Practical" }}
+              />
+            </div>
+          )}
 
-                              if (p.type === "Break") {
-                                return (
-                                  <td
-                                    key={pIdx}
-                                    className="border border-slate-200 bg-amber-50 p-2 font-bold text-amber-800 dark:border-slate-800 dark:bg-amber-950/30 dark:text-amber-300"
-                                  >
-                                    [Break]
-                                  </td>
-                                );
-                              }
+          {activeViewMode === "table" && selectedSemesterTab && generatedRoutine.semester_routines[selectedSemesterTab] && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Schedule Grid &mdash; {selectedSemesterTab} ({generatedRoutine.semester_routines[selectedSemesterTab].room_number})
+                </h4>
+                <span className="text-xs text-zinc-500">
+                  Room: {generatedRoutine.semester_routines[selectedSemesterTab].room_number}
+                </span>
+              </div>
 
-                              const match = secEntries.find(
-                                (e: any) => e.day_name === day.name && e.period_name === p.name
-                              );
+              <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <table className="w-full text-center text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-zinc-900 text-white dark:bg-zinc-800">
+                      <th className="border border-zinc-800 p-2.5 font-bold w-24">Day</th>
+                      {periods.map((p, idx) => (
+                        <th key={idx} className="border border-zinc-800 p-2.5 font-bold min-w-[120px]">
+                          {p.name}
+                          <div className="text-[10px] font-normal opacity-80 mt-0.5">
+                            {p.start_time} - {p.end_time}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {generatedRoutine.days.map((day: any) => {
+                      const dayActiveCount = dayPeriodCounts[day.name] || periods.length;
+                      const secEntries = generatedRoutine.semester_routines[selectedSemesterTab].entries;
 
-                              if (match) {
-                                return (
-                                  <td
-                                    key={pIdx}
-                                    className="border border-slate-200 p-2 bg-blue-50/70 dark:border-slate-800 dark:bg-blue-950/40"
-                                  >
-                                    <div className="font-bold text-slate-900 dark:text-white">
-                                      {match.subject_name}
-                                    </div>
-                                    <div className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 mt-0.5">
-                                      {match.teacher_name}
-                                    </div>
-                                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                                      {match.room_number}
-                                    </div>
-                                  </td>
-                                );
-                              }
-
+                      return (
+                        <tr key={day.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                          <td className="border border-zinc-200 bg-zinc-100 p-2.5 font-bold text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
+                            {day.name}
+                          </td>
+                          {periods.map((p, pIdx) => {
+                            if (pIdx >= dayActiveCount) {
                               return (
                                 <td
                                   key={pIdx}
-                                  className="border border-slate-200 p-2 text-slate-400 dark:border-slate-800"
+                                  className="border border-zinc-200 bg-zinc-100/50 p-2.5 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-800/30"
                                 >
                                   -
                                 </td>
                               );
-                            })}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+                            }
 
-            {/* Teacher Master Schedule Display */}
-            {selectedTeacherTab && generatedRoutine.teacher_routines[selectedTeacherTab] && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-bold text-purple-900 dark:text-purple-300">
-                      Faculty Schedule &mdash; {selectedTeacherTab}
-                    </h4>
-                    <p className="text-xs text-slate-500">
-                      Speciality: {generatedRoutine.teacher_routines[selectedTeacherTab].speciality} &bull; Free Time: {generatedRoutine.teacher_routines[selectedTeacherTab].free_time}
-                    </p>
-                  </div>
-                  <span className="rounded-full bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-                    Total Classes: {generatedRoutine.teacher_routines[selectedTeacherTab].entries.length} hrs
-                  </span>
-                </div>
-
-                <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                  <table className="w-full text-center text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-purple-700 text-white dark:bg-purple-900">
-                        <th className="border border-purple-600 p-2 font-bold w-24">Day</th>
-                        {periods.map((p, idx) => (
-                          <th key={idx} className="border border-purple-600 p-2 font-bold min-w-[120px]">
-                            {p.name}
-                            <div className="text-[10px] font-normal opacity-80 mt-0.5">
-                              {p.start_time} - {p.end_time}
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {generatedRoutine.days.map((day: any) => {
-                        const dayActiveCount = dayPeriodCounts[day.name] || periods.length;
-                        const tEntries = generatedRoutine.teacher_routines[selectedTeacherTab].entries;
-
-                        return (
-                          <tr key={day.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                            <td className="border border-slate-200 bg-slate-100 p-2 font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                              {day.name}
-                            </td>
-                            {periods.map((p, pIdx) => {
-                              if (pIdx >= dayActiveCount) {
-                                return (
-                                  <td
-                                    key={pIdx}
-                                    className="border border-slate-200 bg-slate-100/50 p-2 text-slate-400 dark:border-slate-800 dark:bg-slate-800/30"
-                                  >
-                                    -
-                                  </td>
-                                );
-                              }
-
-                              if (p.type === "Break") {
-                                return (
-                                  <td
-                                    key={pIdx}
-                                    className="border border-slate-200 bg-amber-50 p-2 font-bold text-amber-800 dark:border-slate-800 dark:bg-amber-950/30 dark:text-amber-300"
-                                  >
-                                    [Break]
-                                  </td>
-                                );
-                              }
-
-                              const match = tEntries.find(
-                                (e: any) => e.day_name === day.name && e.period_name === p.name
-                              );
-
-                              if (match) {
-                                return (
-                                  <td
-                                    key={pIdx}
-                                    className="border border-slate-200 p-2 bg-purple-50/80 dark:border-slate-800 dark:bg-purple-950/40"
-                                  >
-                                    <div className="font-bold text-purple-950 dark:text-purple-100">
-                                      {match.subject_name}
-                                    </div>
-                                    <div className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 mt-0.5">
-                                      {match.section_name}
-                                    </div>
-                                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                                      {match.room_number}
-                                    </div>
-                                  </td>
-                                );
-                              }
-
+                            if (p.type === "Break") {
                               return (
                                 <td
                                   key={pIdx}
-                                  className="border border-slate-200 p-2 text-emerald-600/70 font-semibold bg-emerald-50/30 dark:border-slate-800 dark:text-emerald-400/70 dark:bg-emerald-950/20"
+                                  className="border border-zinc-200 bg-zinc-100 p-2.5 font-bold text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300"
                                 >
-                                  [Free]
+                                  [Interval]
                                 </td>
                               );
-                            })}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            }
+
+                            const match = secEntries.find(
+                              (e: any) => e.day_name === day.name && e.period_name === p.name
+                            );
+
+                            if (match) {
+                              return (
+                                <td
+                                  key={pIdx}
+                                  className="border border-zinc-200 p-2.5 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800/60"
+                                >
+                                  <div className="font-bold text-zinc-900 dark:text-white">
+                                    {match.subject_name}
+                                    {match.course_type && (
+                                      <span className="ml-1 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+                                        [{match.course_type}]
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mt-0.5">
+                                    {match.teacher_name} {match.teacher_abbrev && `[${match.teacher_abbrev}]`}
+                                  </div>
+                                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                    {match.room_number}
+                                  </div>
+                                </td>
+                              );
+                            }
+
+                            return (
+                              <td
+                                key={pIdx}
+                                className="border border-zinc-200 p-2.5 text-zinc-400 dark:border-zinc-800"
+                              >
+                                -
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {activeViewMode === "teacher" && selectedTeacherTab && generatedRoutine.teacher_routines[selectedTeacherTab] && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                    Faculty Schedule &mdash; {selectedTeacherTab}
+                  </h4>
+                  <p className="text-xs text-zinc-500">
+                    Speciality: {generatedRoutine.teacher_routines[selectedTeacherTab].speciality} &bull; Free Time: {generatedRoutine.teacher_routines[selectedTeacherTab].free_time}
+                  </p>
+                </div>
+                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">
+                  Total Classes: {generatedRoutine.teacher_routines[selectedTeacherTab].entries.length} hrs
+                </span>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <table className="w-full text-center text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-zinc-900 text-white dark:bg-zinc-800">
+                      <th className="border border-zinc-800 p-2.5 font-bold w-24">Day</th>
+                      {periods.map((p, idx) => (
+                        <th key={idx} className="border border-zinc-800 p-2.5 font-bold min-w-[120px]">
+                          {p.name}
+                          <div className="text-[10px] font-normal opacity-80 mt-0.5">
+                            {p.start_time} - {p.end_time}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {generatedRoutine.days.map((day: any) => {
+                      const dayActiveCount = dayPeriodCounts[day.name] || periods.length;
+                      const tEntries = generatedRoutine.teacher_routines[selectedTeacherTab].entries;
+
+                      return (
+                        <tr key={day.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                          <td className="border border-zinc-200 bg-zinc-100 p-2.5 font-bold text-zinc-900 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100">
+                            {day.name}
+                          </td>
+                          {periods.map((p, pIdx) => {
+                            if (pIdx >= dayActiveCount) {
+                              return (
+                                <td
+                                  key={pIdx}
+                                  className="border border-zinc-200 bg-zinc-100/50 p-2.5 text-zinc-400 dark:border-zinc-800 dark:bg-zinc-800/30"
+                                >
+                                  -
+                                </td>
+                              );
+                            }
+
+                            if (p.type === "Break") {
+                              return (
+                                <td
+                                  key={pIdx}
+                                  className="border border-zinc-200 bg-zinc-100 p-2.5 font-bold text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/50 dark:text-zinc-300"
+                                >
+                                  [Interval]
+                                </td>
+                              );
+                            }
+
+                            const match = tEntries.find(
+                              (e: any) => e.day_name === day.name && e.period_name === p.name
+                            );
+
+                            if (match) {
+                              return (
+                                <td
+                                  key={pIdx}
+                                  className="border border-zinc-200 p-2.5 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800/60"
+                                >
+                                  <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                                    {match.subject_name}
+                                  </div>
+                                  <div className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mt-0.5">
+                                    {match.section_name}
+                                  </div>
+                                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                    {match.room_number}
+                                  </div>
+                                </td>
+                              );
+                            }
+
+                            return (
+                              <td
+                                key={pIdx}
+                                className="border border-zinc-200 p-2.5 text-zinc-400 dark:border-zinc-800"
+                              >
+                                [Free]
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Live Watch Modal */}
+      {generatedRoutine && (
+        <LiveWatchModal
+          isOpen={isLiveWatchOpen}
+          onClose={() => setIsLiveWatchOpen(false)}
+          timetable={{
+            id: generatedRoutine.timetable_id,
+            name: generatedRoutine.name,
+            entries: Object.values(generatedRoutine.semester_routines || {}).flatMap((s: any) => s.entries || []),
+            periods: generatedRoutine.periods || periods,
+            teacher_directory: generatedRoutine.teacher_directory || [],
+            legend: generatedRoutine.legend
+          }}
+          days={generatedRoutine.days || []}
+          sections={Object.keys(generatedRoutine.semester_routines || {}).map((s, idx) => ({ id: s, name: s }))}
+          teachers={teachers}
+          initialSectionId={selectedSemesterTab}
+        />
       )}
     </div>
   );
